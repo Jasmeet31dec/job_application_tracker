@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, Briefcase, Github } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Login = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -16,9 +18,29 @@ const Login = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Login Attempt:", formData);
+    try {
+      const response = await fetch("http://localhost:5000/auth/login",{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+        },
+        body:JSON.stringify(formData)
+      })
+      const result = await response.json();
+      localStorage.setItem("token",result.token);
+      console.log(result);
+      navigate("/");
+    } catch (error) {
+      console.error(error.message);
+    } finally {
+      setFormData({
+        email: '',
+        password: '',
+      })
+    }
   };
 
   return (
@@ -121,7 +143,7 @@ const Login = () => {
 
         <p className="text-center text-sm text-slate-600 mt-8">
           Don't have an account?{' '}
-          <a href="#" className="text-blue-600 font-semibold hover:underline">Sign up for free</a>
+          <Link to="/signup" className="text-blue-600 font-semibold hover:underline">Sign up for free</Link>
         </p>
       </div>
     </div>

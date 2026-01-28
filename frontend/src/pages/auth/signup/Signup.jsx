@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Lock, User, Eye, EyeOff, Briefcase, Github } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -137,7 +137,7 @@ const Signup = () => {
 
         <p className="text-center text-sm text-slate-600 mt-8">
           Already have an account?{' '}
-          <a href="#" className="text-blue-600 font-semibold hover:underline">Sign in</a>
+          <Link to="/login" className="text-blue-600 font-semibold hover:underline">Sign in</Link>
         </p>
       </div>
     </div>
