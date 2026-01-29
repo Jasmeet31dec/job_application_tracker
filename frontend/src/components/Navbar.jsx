@@ -47,6 +47,7 @@ const Navbar = () => {
             {token ?
               <Link
                 onClick={handleLogout}
+                to='/login'
                 className="text-slate-600 hover:text-slate-900 font-medium text-sm px-4 py-2 transition"
               >
                 Log out
