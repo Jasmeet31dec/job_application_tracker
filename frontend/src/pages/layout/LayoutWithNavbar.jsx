@@ -1,3 +1,4 @@
+import Footer from "../../components/Footer";
 import Navbar from "../../components/Navbar";
 
 const LayoutWithNavbar = ({ children }) => {
@@ -5,6 +6,7 @@ const LayoutWithNavbar = ({ children }) => {
     <>
       <Navbar />
       <div className="page-content">{children}</div>
+      <Footer />
     </>
   );
 };
