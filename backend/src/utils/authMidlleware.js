@@ -1,12 +1,12 @@
 const jwt = require("jsonwebtoken");
-const secretKey = require("../configuration/jwtConfig");
+const { secretKey } = require("../configuration/jwtConfig");
 
 function authenticateToken(req, res, next) {
   const authHeader = req.header("Authorization");
   if (!authHeader) {
     return res.status(401).json({ message: "Unauthorized: Missing token!" });
   }
-  const [ bearer, token ] = authHeader.split(" ");
+  const [bearer, token] = authHeader.split(" ");
   if (bearer !== "Bearer" || !token) {
     return res
       .status(401)
@@ -14,7 +14,7 @@ function authenticateToken(req, res, next) {
   }
   jwt.verify(token, secretKey, (err, user) => {
     if (err) {
-        return res.status(403).json({ message: "Forbidden: Invalid Token" });
+      return res.status(403).json({ message: "Forbidden: Invalid Token" });
     }
     req.user = user;
     next();
