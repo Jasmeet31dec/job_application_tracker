@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     Building2, MapPin, Briefcase, ExternalLink,
-    Plus, Loader2, ClipboardList, Ghost, CheckCircle2, XCircle
+    Plus, Loader2, ClipboardList, Ghost, Trash2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -11,7 +11,6 @@ const MyApplications = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // statuses 
     const columns = [
         { id: 'Saved', title: 'Saved', color: 'bg-indigo-400' },
         { id: 'Applied', title: 'Applied', color: 'bg-blue-500' },
@@ -20,29 +19,81 @@ const MyApplications = () => {
         { id: 'Rejected', title: 'Rejected', color: 'bg-rose-500' },
         { id: 'Ghosted', title: 'Ghosted', color: 'bg-slate-400' },
     ];
-    console.log(applications);
-    useEffect(() => {
-        const fetchApps = async () => {
-            try {
-                setLoading(true);
-                const response = await fetch("http://localhost:5000/api/applications/my-applications", {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
 
-                if (!response.ok) throw new Error('Failed to fetch applications');
-                const result = await response.json();
-                setApplications(result.data);
-            } catch (err) {
-                setError(err.message);
-            } finally {
-                setLoading(false);
-            }
-        };
+    useEffect(() => {
         fetchApps();
-        
     }, []);
+
+    const fetchApps = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch("http://localhost:5000/api/applications/my-applications", {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!response.ok) throw new Error('Failed to fetch applications');
+            const result = await response.json();
+            setApplications(result.data);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // --- Drag and Drop Logic ---
+    const handleDragStart = (e, id) => {
+        e.dataTransfer.setData("applicationId", id);
+    };
+
+    const onDragOver = (e) => {
+        e.preventDefault(); // Necessary to allow drop
+    };
+
+    const handleDrop = async (e, newStatus) => {
+        const id = e.dataTransfer.getData("applicationId");
+        
+        // Optimistic UI Update
+        const originalApps = [...applications];
+        setApplications(prev => prev.map(app => 
+            app._id === id ? { ...app, status: newStatus } : app
+        ));
+
+        try {
+            const response = await fetch(`http://localhost:5000/api/applications/my-applications/${id}/status`, {
+                method: 'PATCH', // or PUT depending on your API
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            if (!response.ok) throw new Error("Failed to update status");
+        } catch (err) {
+            setApplications(originalApps); // Revert on failure
+            alert("Error updating status: " + err.message);
+        }
+    };
+
+    // --- Delete Logic ---
+    const handleDelete = async (id) => {
+        if (!window.confirm("Are you sure you want to delete this application?")) return;
+
+        try {
+            const response = await fetch(`http://localhost:5000/api/applications/my-applications/${id}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                setApplications(prev => prev.filter(app => app._id !== id));
+            } else {
+                throw new Error("Failed to delete");
+            }
+        } catch (err) {
+            alert(err.message);
+        }
+    };
 
     if (loading) {
         return (
@@ -66,12 +117,15 @@ const MyApplications = () => {
                 </Link>
             </div>
 
-            {/* Kanban Board - Added overflow-x-auto for 6 columns */}
             <div className="max-w-[1600px] mx-auto overflow-x-auto pb-8">
                 <div className="flex gap-6 min-w-[1400px]">
                     {columns.map((col) => (
-                        <div key={col.id} className="flex-1 min-w-[280px] flex flex-col gap-4">
-                            {/* Column Title */}
+                        <div 
+                            key={col.id} 
+                            className="flex-1 min-w-[280px] flex flex-col gap-4"
+                            onDragOver={onDragOver}
+                            onDrop={(e) => handleDrop(e, col.id)}
+                        >
                             <div className="flex items-center justify-between px-3 py-1">
                                 <div className="flex items-center gap-2">
                                     <div className={`w-3 h-3 rounded-full ${col.color}`}></div>
@@ -82,32 +136,38 @@ const MyApplications = () => {
                                 </span>
                             </div>
 
-                            {/* Card Container */}
-                            <div className="bg-slate-200/50 p-2.5 rounded-2xl min-h-[600px] space-y-4 border-2 border-dashed border-slate-200/60">
+                            <div className="bg-slate-200/50 p-2.5 rounded-2xl min-h-[600px] space-y-4 border-2 border-dashed border-slate-200/60 transition-colors hover:bg-slate-200/80">
                                 {applications.filter(app => app.status === col.id).map((app) => (
                                     <div
                                         key={app._id}
-                                        className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-indigo-400 hover:-translate-y-1 transition-all duration-300 group cursor-pointer"
+                                        draggable
+                                        onDragStart={(e) => handleDragStart(e, app._id)}
+                                        className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-indigo-400 transition-all duration-300 group cursor-grab active:cursor-grabbing"
                                     >
-                                        {/* Position & Action */}
                                         <div className="flex justify-between items-start mb-1">
                                             <h3 className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors leading-snug">
                                                 {app.position}
                                             </h3>
-                                            {app.applicationLink && (
-                                                <a href={app.applicationLink} target="_blank" rel="noreferrer" className="text-slate-300 hover:text-indigo-600 transition">
-                                                    <ExternalLink size={14} />
-                                                </a>
-                                            )}
+                                            <div className="flex items-center gap-2">
+                                                {app.applicationLink && (
+                                                    <a href={app.applicationLink} target="_blank" rel="noreferrer" className="text-slate-300 hover:text-indigo-600 transition">
+                                                        <ExternalLink size={14} />
+                                                    </a>
+                                                )}
+                                                <button 
+                                                    onClick={() => handleDelete(app._id)}
+                                                    className="text-slate-300 hover:text-rose-500 transition opacity-0 group-hover:opacity-100"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </div>
                                         </div>
 
-                                        {/* Company Name */}
                                         <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">
                                             <Building2 size={12} />
                                             {app.company}
                                         </div>
 
-                                        {/* Badges */}
                                         <div className="flex flex-wrap gap-2 mb-4">
                                             <div className="flex items-center gap-1 bg-slate-50 text-slate-500 border border-slate-100 px-2 py-0.5 rounded text-[10px] font-bold uppercase">
                                                 <MapPin size={10} /> {app.jobLocation}
@@ -117,14 +177,12 @@ const MyApplications = () => {
                                             </div>
                                         </div>
 
-                                        {/* Conditional Status Icons inside card */}
                                         {app.status === 'Ghosted' && (
                                             <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-bold mb-3 italic">
                                                 <Ghost size={12} /> No response received
                                             </div>
                                         )}
 
-                                        {/* Notes Section */}
                                         {app.notes && (
                                             <div className="bg-slate-50/80 rounded-lg p-3 border border-slate-100 mt-2">
                                                 <p className="text-[11px] text-slate-500 leading-relaxed italic line-clamp-2">
@@ -133,13 +191,6 @@ const MyApplications = () => {
                                                 </p>
                                             </div>
                                         )}
-
-                                        {/* Source Footer */}
-                                        <div className="mt-4 pt-3 border-t border-slate-50 flex justify-between items-center">
-                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                                                Source: {app.source || 'Direct'}
-                                            </span>
-                                        </div>
                                     </div>
                                 ))}
                             </div>

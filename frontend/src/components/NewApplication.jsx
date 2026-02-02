@@ -4,9 +4,11 @@ import {
     Link as LinkIcon, FileText, Send, X,
     PlusCircle, CheckCircle2
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const NewApplication = ({ onClose }) => {
     const token = localStorage.getItem("token");
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         company: '',
         position: '',
@@ -49,6 +51,7 @@ const NewApplication = ({ onClose }) => {
             console.error('Error adding application:', error);
         } finally {
             setIsSubmitting(false);
+            navigate("/applications");
         }
     };
 
