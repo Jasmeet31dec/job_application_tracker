@@ -8,7 +8,8 @@ const Login = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    rememberMe: false  });
+    rememberMe: false
+  });
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -20,21 +21,25 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Login Attempt:", formData);
     try {
-      const response = await fetch("http://localhost:5000/auth/login",{
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json",
+      const response = await fetch("http://localhost:5000/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        body:JSON.stringify(formData)
+        body: JSON.stringify(formData)
       })
+      if (!response.ok) {
+        const confirmed = window.confirm("Invalid credentials");
+      }
       const result = await response.json();
-      localStorage.setItem("token",result.token);
-      console.log(result);
+      if (result.token != null) {
+        localStorage.setItem("token", result.token);
+      }
       navigate("/dashboard");
     } catch (error) {
       console.error(error.message);
+      alert("Invalid credentials");
     } finally {
       setFormData({
         email: '',

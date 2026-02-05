@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Briefcase, Menu, X } from 'lucide-react';
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const location = useLocation(); // Hook to track the current URL path
   const [isOpen, setIsOpen] = useState(false);
   const token = localStorage.getItem("token");
 
-  let navLinks=[];
+  let navLinks = [];
   if (token) {
     navLinks = [
       { name: 'Dashboard', href: '/dashboard' },
@@ -21,17 +22,16 @@ const Navbar = () => {
     ];
   }
 
-
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/login");
-  }
+  };
 
   return (
     <nav className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-20"> {/* Increased height for a more premium feel */}
-
+        <div className="flex justify-between h-20">
+          
           {/* Logo Section */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center gap-2 group">
@@ -45,15 +45,22 @@ const Navbar = () => {
 
             {/* Desktop Navigation Links */}
             <div className="hidden md:ml-10 md:flex md:space-x-8">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  to={link.href}
-                  className="text-slate-600 hover:text-indigo-600 px-1 pt-1 text-sm font-semibold transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-indigo-600 after:transition-all"
-                >
-                  {link.name}
-                </Link>
-              ))}
+              {navLinks.map((link) => {
+                const isActive = location.pathname === link.href;
+                return (
+                  <Link
+                    key={link.name}
+                    to={link.href}
+                    className={`px-1 pt-1 text-sm font-semibold transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:bg-indigo-600 after:transition-all hover:after:w-full ${
+                      isActive 
+                        ? 'text-indigo-600 after:w-full' 
+                        : 'text-slate-600 hover:text-indigo-600 after:w-0'
+                    }`}
+                  >
+                    {link.name}
+                  </Link>
+                );
+              })}
             </div>
           </div>
 
@@ -101,22 +108,29 @@ const Navbar = () => {
       {isOpen && (
         <div className="md:hidden bg-white border-t border-slate-100 animate-in slide-in-from-top duration-300">
           <div className="pt-4 pb-3 space-y-1 px-4">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                to={link.href}
-                onClick={() => setIsOpen(false)}
-                className="block py-3 px-4 text-base font-bold text-slate-700 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition"
-              >
-                {link.name}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const isActive = location.pathname === link.href;
+              return (
+                <Link
+                  key={link.name}
+                  to={link.href}
+                  onClick={() => setIsOpen(false)}
+                  className={`block py-3 px-4 text-base font-bold rounded-xl transition ${
+                    isActive 
+                      ? 'text-indigo-600 bg-indigo-50' 
+                      : 'text-slate-700 hover:text-indigo-600 hover:bg-indigo-50'
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
           </div>
           <div className="pt-4 pb-8 border-t border-slate-100 px-6 space-y-4">
             {token ? (
               <Link
                 onClick={() => {
-                  handleLogout(); // Logic preserved
+                  handleLogout();
                   setIsOpen(false);
                 }}
                 to="/login"

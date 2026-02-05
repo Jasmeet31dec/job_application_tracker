@@ -8,6 +8,7 @@ const applicationRoutes = require("./routes/applicationRoutes");
 const bodyParser = require("body-parser");
 const createAdminAccount = require("./scripts/admin");
 
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -20,6 +21,7 @@ app.use("/user", signupRoute);
 app.use("/auth", loginRoute);
 app.use("/api", userRoute);
 app.use("/api/applications", applicationRoutes);
+
 
 
 app.listen(PORT, () => {

@@ -47,7 +47,6 @@ const getUserApplications = async (req, res) => {
     });
 
   } catch (error) {
-    console.log("reached here 3");
     console.error("Error fetching applications:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
