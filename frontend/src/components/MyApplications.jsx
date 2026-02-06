@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
     Building2, MapPin, Briefcase, ExternalLink,
-    Plus, Loader2, ClipboardList, Ghost, Trash2
+    Plus, Loader2, ClipboardList, Ghost, Trash2,
+    Calendar // Added Calendar icon
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -12,7 +13,6 @@ const MyApplications = () => {
     const [error, setError] = useState(null);
 
     const columns = [
-        { id: 'Saved', title: 'Saved', color: 'bg-indigo-400' },
         { id: 'Applied', title: 'Applied', color: 'bg-blue-500' },
         { id: 'Interviewing', title: 'Interviewing', color: 'bg-amber-500' },
         { id: 'Offer', title: 'Offer', color: 'bg-emerald-500' },
@@ -46,13 +46,12 @@ const MyApplications = () => {
     };
 
     const onDragOver = (e) => {
-        e.preventDefault(); // Necessary to allow drop
+        e.preventDefault(); 
     };
 
     const handleDrop = async (e, newStatus) => {
         const id = e.dataTransfer.getData("applicationId");
         
-        // Optimistic UI Update
         const originalApps = [...applications];
         setApplications(prev => prev.map(app => 
             app._id === id ? { ...app, status: newStatus } : app
@@ -60,7 +59,7 @@ const MyApplications = () => {
 
         try {
             const response = await fetch(`http://localhost:5000/api/applications/my-applications/${id}/status`, {
-                method: 'PATCH', // or PUT depending on your API
+                method: 'PATCH', 
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`
@@ -70,12 +69,11 @@ const MyApplications = () => {
 
             if (!response.ok) throw new Error("Failed to update status");
         } catch (err) {
-            setApplications(originalApps); // Revert on failure
+            setApplications(originalApps); 
             alert("Error updating status: " + err.message);
         }
     };
 
-    // --- Delete Logic ---
     const handleDelete = async (id) => {
         if (!window.confirm("Are you sure you want to delete this application?")) return;
 
@@ -106,7 +104,6 @@ const MyApplications = () => {
 
     return (
         <div className="p-6 bg-slate-50 min-h-screen">
-            {/* Header */}
             <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
                 <div>
                     <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Trackly <span className="text-indigo-600">Board</span></h1>
@@ -163,9 +160,16 @@ const MyApplications = () => {
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">
-                                            <Building2 size={12} />
-                                            {app.company}
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                                <Building2 size={12} />
+                                                {app.company}
+                                            </div>
+                                            {/* NEW: Applied Date Display */}
+                                            <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400">
+                                                <Calendar size={11} className="text-slate-300"/>
+                                                {new Date(app.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}
+                                            </div>
                                         </div>
 
                                         <div className="flex flex-wrap gap-2 mb-4">
