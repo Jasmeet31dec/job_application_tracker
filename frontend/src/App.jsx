@@ -11,11 +11,12 @@ import NewApplication from "./components/NewApplication.jsx";
 import Features from "./components/Features.jsx";
 import WhyTrackly from "./components/WhyTrackly.jsx";
 import JobBoard from "./components/JobBoard.jsx";
+import JobDetails from "./components/JobDetails.jsx";
 
 
 
 export default function App() {
-  
+
   return (
     <>
       <Routes>
@@ -34,6 +35,8 @@ export default function App() {
         <Route path='/applications' element={<LayoutWithNavbar><MyApplications></MyApplications></LayoutWithNavbar>}></Route>
         <Route path='/applications/create' element={<NewApplication></NewApplication>}></Route>
         <Route path='/jobs' element={<LayoutWithNavbar><JobBoard></JobBoard></LayoutWithNavbar>}></Route>
+        <Route path='/jobs/:id' element={<LayoutWithNavbar><JobDetails></JobDetails></LayoutWithNavbar>}></Route>
+
       </Routes>
     </>
   );
