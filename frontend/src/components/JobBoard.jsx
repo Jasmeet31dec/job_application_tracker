@@ -67,7 +67,7 @@ const JobBoard = () => {
           <div className="flex items-center gap-6">
             {/* Added: Saved Jobs Button */}
             <button 
-              onClick={() => navigate('/my-applications')} // Assumes your board is at this route
+              onClick={() => navigate('/jobs/savedJobs')} // Assumes your board is at this route
               className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors"
             >
               <Bookmark size={16} /> Saved Jobs

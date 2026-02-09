@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { 
     ChevronLeft, MapPin, Briefcase, Clock, 
     DollarSign, ExternalLink, Bookmark, Building2,
-    Globe, Users
+    Globe, Users, CheckCircle2 // Added CheckCircle for feedback
 } from 'lucide-react';
 
 const JobDetails = () => {
@@ -14,6 +14,7 @@ const JobDetails = () => {
     const [job, setJob] = useState(null);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
+    const [isSaved, setIsSaved] = useState(false); // Tracking if saved in current session
 
     useEffect(() => {
         fetchJobDetails();
@@ -34,7 +35,9 @@ const JobDetails = () => {
         }
     };
 
-    // Generic function to track the job in your DB
+    /**
+     * Logic to create a new application entry in your DB
+     */
     const trackJobSelection = async (status, notePrefix) => {
         try {
             setActionLoading(true);
@@ -48,22 +51,24 @@ const JobDetails = () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
                     position: job.title,
                     company: job.company,
                     jobLocation: job.location,
                     jobType: job.type,
-                    status: status, // "Applied" or "Saved"
+                    status: status, 
                     applicationLink: job.applyLink,
                     notes: `${notePrefix} from Trackly Board on ${today}`
                 })
             });
 
-            return response.ok;
+            if (!response.ok) throw new Error("Failed to update board");
+            return true;
         } catch (err) {
             console.error("Tracking error:", err);
+            alert("Error: Could not update your job board.");
             return false;
         } finally {
             setActionLoading(false);
@@ -71,20 +76,22 @@ const JobDetails = () => {
     };
 
     const handleApplyNow = async () => {
-        // 1. Create the application in your DB with "Applied" status
         const success = await trackJobSelection('Applied', 'Applied directly');
-        
         if (success) {
-            // 2. Open the external application link in a new tab
             window.open(job.applyLink, '_blank', 'noopener,noreferrer');
-        } else {
-            alert("Could not initialize application tracking. Please try again.");
         }
     };
 
+    // Updated handleSaveJob Logic
     const handleSaveJob = async () => {
+        if (isSaved) return; // Prevent double saving
+        
         const success = await trackJobSelection('Saved', 'Saved for later');
-        if (success) alert("Job saved to your board!");
+        if (success) {
+            setIsSaved(true);
+            alert("Success! This job has been added to your Saved column.");
+            
+        }
     };
 
     if (loading) return (
@@ -97,7 +104,6 @@ const JobDetails = () => {
 
     return (
         <div className="bg-[#fbfcff] min-h-screen pb-20">
-            {/* Header / Navigation */}
             <div className="bg-white border-b border-slate-200 sticky top-0 z-50">
                 <div className="max-w-5xl mx-auto px-6 h-20 flex items-center justify-between">
                     <button 
@@ -108,15 +114,20 @@ const JobDetails = () => {
                     </button>
                     
                     <div className="flex items-center gap-4">
+                        {/* ENHANCED SAVE BUTTON */}
                         <button 
                             onClick={handleSaveJob}
-                            disabled={actionLoading}
-                            className="flex items-center gap-2 px-5 py-2.5 border-2 border-slate-200 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-50 transition-all active:scale-95 disabled:opacity-50"
+                            disabled={actionLoading || isSaved}
+                            className={`flex items-center gap-2 px-5 py-2.5 border-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-70 ${
+                                isSaved 
+                                ? "bg-emerald-50 border-emerald-200 text-emerald-600" 
+                                : "hover:bg-slate-50 border-slate-200 text-slate-900"
+                            }`}
                         >
-                            <Bookmark size={16} /> Save
+                            {isSaved ? <CheckCircle2 size={16} /> : <Bookmark size={16} />}
+                            {actionLoading ? "Saving..." : isSaved ? "Saved" : "Save Job"}
                         </button>
                         
-                        {/* THE NEW APPLY BUTTON */}
                         <button 
                             onClick={handleApplyNow}
                             disabled={actionLoading}
@@ -130,7 +141,6 @@ const JobDetails = () => {
 
             <div className="max-w-5xl mx-auto px-6 pt-12">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                    
                     <div className="lg:col-span-2 space-y-12">
                         <section>
                             <div className="flex items-center gap-4 mb-6">
@@ -161,40 +171,25 @@ const JobDetails = () => {
                         </section>
                     </div>
 
-                    {/* Sidebar Information */}
                     <div className="lg:col-span-1 space-y-6">
                         <div className="bg-slate-900 rounded-3xl p-8 text-white shadow-xl">
-                            <h3 className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-6 font-mono">Meta Data</h3>
+                            <h3 className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-6 font-mono">Job Meta</h3>
                             <div className="space-y-6">
                                 <div className="flex items-start gap-4">
                                     <div className="p-2 bg-white/10 rounded-lg"><DollarSign size={18}/></div>
                                     <div>
                                         <p className="text-[10px] uppercase font-bold opacity-50">Salary</p>
-                                        <p className="text-sm font-black tracking-wide">{job.salary || "Competitive"}</p>
+                                        <p className="text-sm font-black tracking-wide font-mono">{job.salary || "Competitive"}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-4">
                                     <div className="p-2 bg-white/10 rounded-lg"><Briefcase size={18}/></div>
                                     <div>
-                                        <p className="text-[10px] uppercase font-bold opacity-50">Job Type</p>
-                                        <p className="text-sm font-black tracking-wide text-indigo-400">{job.type}</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-start gap-4">
-                                    <div className="p-2 bg-white/10 rounded-lg"><Clock size={18}/></div>
-                                    <div>
-                                        <p className="text-[10px] uppercase font-bold opacity-50">Visibility</p>
-                                        <p className="text-sm font-black tracking-wide">Live Role</p>
+                                        <p className="text-[10px] uppercase font-bold opacity-50">Contract</p>
+                                        <p className="text-sm font-black tracking-wide text-indigo-400 uppercase">{job.type}</p>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <div className="bg-white border border-slate-200 rounded-3xl p-8 text-center">
-                            <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Trackly Intelligence</h3>
-                            <p className="text-[11px] font-bold text-slate-500 leading-relaxed">
-                                High-match role for your profile based on keywords. 
-                            </p>
                         </div>
                     </div>
                 </div>

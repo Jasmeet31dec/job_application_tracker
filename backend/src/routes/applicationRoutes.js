@@ -7,6 +7,6 @@ router.post("/create", authenticateToken, applicationController.createApplicatio
 router.get("/my-applications", authenticateToken, applicationController.getUserApplications);
 router.delete("/my-applications/:id", authenticateToken, applicationController.deleteApplication);
 router.patch("/my-applications/:id/status", authenticateToken, applicationController.updateApplicationStatus);
-
+router.get("/savedJobs",authenticateToken,applicationController.getSavedUserApplications);
 
 module.exports = router;

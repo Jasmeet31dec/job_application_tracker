@@ -20,6 +20,13 @@ async function getApplicationsByUser(userId) {
   return await JobApplication.find({ user: userId }).sort({ createdAt: -1 });
 };
 
+async function getSavedApplicationsByUser(userId) {
+  return await JobApplication.find({ 
+  user: userId, 
+  status: "Saved" 
+}).sort({ createdAt: -1 });
+};
+
 
 async function createApplication(applicationData) {
   const application = new JobApplication(applicationData);
@@ -29,6 +36,7 @@ async function createApplication(applicationData) {
 module.exports = {
   createApplication,
   getApplicationsByUser,
+  getSavedApplicationsByUser,
   deleteApplication,
   updateApplicationStatus
 };

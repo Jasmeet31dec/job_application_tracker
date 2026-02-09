@@ -34,6 +34,7 @@ const CustomerDashboard = () => {
     offers: apps.filter(a => a.status === 'Offer').length,
     ghosted: apps.filter(a => a.status === 'Ghosted').length,
     rejected: apps.filter(a => a.status === 'Rejected').length,
+    saved: apps.filter(a => a.status === 'Saved').length, // Added saved count
   };
 
   const responseRate = stats.total > 0 
@@ -86,6 +87,7 @@ const CustomerDashboard = () => {
             
             <div className="space-y-6">
               {[
+                { label: 'Saved', count: stats.saved, color: 'bg-indigo-400' }, // Added Saved to Breakdown
                 { label: 'Applied', count: apps.filter(a => a.status === 'Applied').length, color: 'bg-blue-500' },
                 { label: 'Interviewing', count: stats.interviews, color: 'bg-amber-500' },
                 { label: 'Offer', count: stats.offers, color: 'bg-emerald-500' },
@@ -113,7 +115,6 @@ const CustomerDashboard = () => {
 
           {/* Activity Sidebar */}
           <div className="space-y-6">
-            {/* Quick Actions / Tips */}
             <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden group">
               <div className="relative z-10">
                 <h4 className="font-black uppercase tracking-tighter text-xl mb-2">Next Step?</h4>
@@ -127,7 +128,6 @@ const CustomerDashboard = () => {
               <Ghost className="absolute -bottom-4 -right-4 text-white/5 rotate-12 group-hover:-rotate-12 transition-transform duration-700" size={140} />
             </div>
 
-            {/* Recent High-Priority Jobs */}
             <div className="bg-white rounded-[2.5rem] border border-slate-200 p-8 shadow-sm">
               <h3 className="font-black text-slate-900 uppercase tracking-tight mb-6 flex items-center justify-between">
                 Recent <ChevronRight size={16} className="text-indigo-600"/>
@@ -150,7 +150,6 @@ const CustomerDashboard = () => {
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>
