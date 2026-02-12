@@ -48,7 +48,7 @@ const SavedJobs = () => {
     }
   };
 
-  const handleViewJob = (id) => {
+  const handleJobDetails = (id) => {
     navigate(`/jobs/${id}`);
   };
 
@@ -176,7 +176,7 @@ const SavedJobs = () => {
                   
                   <div className="flex gap-2">
                     <button className="px-4 py-2 bg-slate-900 text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all"
-                        onClick={() => handleViewJob(job._id)}
+                        onClick={() => handleJobDetails(job.jobId)}
                         title='View job details'
                     >
                       Details

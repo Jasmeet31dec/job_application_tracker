@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import { AppProvider } from "./context/AppContext.jsx";
 
 import Login from "./pages/auth/login/Login.jsx";
 import Signup from "./pages/auth/signup/Signup";
@@ -19,7 +20,7 @@ import SavedJobs from "./components/SavedJobs.jsx";
 export default function App() {
 
   return (
-    <>
+    <AppProvider>
       <Routes>
         <Route path="/" element={<LayoutWithNavbar><LandingPage></LandingPage></LayoutWithNavbar>}></Route>
         <Route path='/login' element={<Login></Login>}></Route>
@@ -40,6 +41,6 @@ export default function App() {
         <Route path='/jobs/savedjobs' element={<LayoutWithNavbar><SavedJobs></SavedJobs></LayoutWithNavbar>}></Route>
 
       </Routes>
-    </>
+    </AppProvider>
   );
 }

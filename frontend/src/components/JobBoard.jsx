@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Search, MapPin, Briefcase, Clock,
-  ArrowRight, Filter, RotateCcw, Bookmark // Added Bookmark icon
+  ArrowRight, Filter, RotateCcw, Bookmark
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -16,6 +16,20 @@ const JobBoard = () => {
     jobType: "All",
     postedWithin: "All",
     location: "All"
+  });
+
+  /**
+   * ADDED: Frontend Filtering Logic
+   * Filters the currently loaded 'jobs' based on the searchTerm 
+   * across title, company, and location.
+   */
+  const filteredJobs = jobs.filter(job => {
+    const search = searchTerm.toLowerCase();
+    return (
+      job.title?.toLowerCase().includes(search) ||
+      job.company?.toLowerCase().includes(search) ||
+      job.location?.toLowerCase().includes(search)
+    );
   });
 
   useEffect(() => {
@@ -65,9 +79,8 @@ const JobBoard = () => {
           </div>
           
           <div className="flex items-center gap-6">
-            {/* Added: Saved Jobs Button */}
             <button 
-              onClick={() => navigate('/jobs/savedJobs')} // Assumes your board is at this route
+              onClick={() => navigate('/jobs/savedJobs')} 
               className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors"
             >
               <Bookmark size={16} /> Saved Jobs
@@ -158,18 +171,18 @@ const JobBoard = () => {
         <main className="lg:col-span-3">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 font-mono">
-              Live Opportunities // {jobs.length} Results
+              Live Opportunities // {filteredJobs.length} Results {/* Changed to filtered count */}
             </h3>
           </div>
 
-          {loading ? (
+          {loading && jobs.length === 0 ? (
             <div className="py-20 flex flex-col items-center gap-4">
               <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Updating results...</p>
             </div>
           ) : (
             <div className="space-y-4">
-              {jobs.map(job => (
+              {filteredJobs.map(job => ( // Changed to map over filteredJobs
                 <div key={job.id} className="bg-white border border-slate-200 rounded-xl p-6 hover:shadow-xl hover:shadow-indigo-900/[0.03] hover:border-indigo-200 transition-all duration-300 group">
                   <div className="flex flex-col lg:flex-row gap-6 lg:items-center">
                     <div className="w-12 h-12 bg-slate-900 text-white rounded-lg flex items-center justify-center font-black text-xl shrink-0 group-hover:bg-indigo-600 transition-colors">

@@ -59,6 +59,7 @@ const JobDetails = () => {
                     jobLocation: job.location,
                     jobType: job.type,
                     status: status, 
+                    jobId:id,
                     applicationLink: job.applyLink,
                     notes: `${notePrefix} from Trackly Board on ${today}`
                 })

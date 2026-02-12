@@ -32,6 +32,11 @@ const jobApplicationSchema = new mongoose.Schema(
       default: ""
     },
 
+    jobId: {
+      type: String,
+      default: ""
+    },
+
     jobType: {
       type: String,
       enum: ["Full-time", "Part-time", "Internship", "Contract", "Remote","Working student"],
