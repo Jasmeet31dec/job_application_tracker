@@ -1,16 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
     Building2, MapPin, Briefcase, ExternalLink,
     Plus, Loader2, ClipboardList, Ghost, Trash2,
-    Calendar // Added Calendar icon
+    Calendar
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useApp } from '../context/AppContext'; // Import your hook
 
 const MyApplications = () => {
-    const token = localStorage.getItem("token");
-    const [applications, setApplications] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    // Pull global state and actions from Context
+    const { 
+        applications, 
+        loading, 
+        fetchMyApplications, 
+        updateApplicationStatus, 
+        deleteApplication 
+    } = useApp();
 
     const columns = [
         { id: 'Applied', title: 'Applied', color: 'bg-blue-500' },
@@ -21,24 +26,8 @@ const MyApplications = () => {
     ];
 
     useEffect(() => {
-        fetchApps();
-    }, []);
-
-    const fetchApps = async () => {
-        try {
-            setLoading(true);
-            const response = await fetch("http://localhost:5000/api/applications/my-applications", {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            if (!response.ok) throw new Error('Failed to fetch applications');
-            const result = await response.json();
-            setApplications(result.data);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
+        fetchMyApplications();
+    }, [fetchMyApplications]);
 
     // --- Drag and Drop Logic ---
     const handleDragStart = (e, id) => {
@@ -51,49 +40,15 @@ const MyApplications = () => {
 
     const handleDrop = async (e, newStatus) => {
         const id = e.dataTransfer.getData("applicationId");
-        
-        const originalApps = [...applications];
-        setApplications(prev => prev.map(app => 
-            app._id === id ? { ...app, status: newStatus } : app
-        ));
-
-        try {
-            const response = await fetch(`http://localhost:5000/api/applications/my-applications/${id}/status`, {
-                method: 'PATCH', 
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify({ status: newStatus })
-            });
-
-            if (!response.ok) throw new Error("Failed to update status");
-        } catch (err) {
-            setApplications(originalApps); 
-            alert("Error updating status: " + err.message);
-        }
+        await updateApplicationStatus(id, newStatus);
     };
 
     const handleDelete = async (id) => {
         if (!window.confirm("Are you sure you want to delete this application?")) return;
-
-        try {
-            const response = await fetch(`http://localhost:5000/api/applications/my-applications/${id}`, {
-                method: 'DELETE',
-                headers: { Authorization: `Bearer ${token}` }
-            });
-
-            if (response.ok) {
-                setApplications(prev => prev.filter(app => app._id !== id));
-            } else {
-                throw new Error("Failed to delete");
-            }
-        } catch (err) {
-            alert(err.message);
-        }
+        await deleteApplication(id);
     };
 
-    if (loading) {
+    if (loading && applications.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px]">
                 <Loader2 className="animate-spin text-indigo-600 mb-4" size={40} />
@@ -165,7 +120,6 @@ const MyApplications = () => {
                                                 <Building2 size={12} />
                                                 {app.company}
                                             </div>
-                                            {/* NEW: Applied Date Display */}
                                             <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400">
                                                 <Calendar size={11} className="text-slate-300"/>
                                                 {new Date(app.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}

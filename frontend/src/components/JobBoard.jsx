@@ -4,14 +4,14 @@ import {
   ArrowRight, Filter, RotateCcw, Bookmark
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useApp } from '../context/AppContext'; // Import your custom hook
 
 const JobBoard = () => {
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
-  const [jobs, setJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Use global state and actions from AppContext
+  const { jobs, fetchExternalJobs, loading } = useApp();
+  
   const [searchTerm, setSearchTerm] = useState("");
-
   const [filters, setFilters] = useState({
     jobType: "All",
     postedWithin: "All",
@@ -19,9 +19,8 @@ const JobBoard = () => {
   });
 
   /**
-   * ADDED: Frontend Filtering Logic
-   * Filters the currently loaded 'jobs' based on the searchTerm 
-   * across title, company, and location.
+   * Frontend Filtering Logic 
+   * Provides instant feedback while typing, filtering the global 'jobs' state.
    */
   const filteredJobs = jobs.filter(job => {
     const search = searchTerm.toLowerCase();
@@ -32,34 +31,20 @@ const JobBoard = () => {
     );
   });
 
+  // Debounced API call via Context Action
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      fetchJobs();
-    }, 500);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [filters, searchTerm]);
-
-  const fetchJobs = async () => {
-    try {
-      setLoading(true);
       const params = new URLSearchParams();
       if (searchTerm) params.append('search', searchTerm);
       if (filters.jobType !== 'All') params.append('type', filters.jobType);
       if (filters.postedWithin !== 'All') params.append('posted', filters.postedWithin);
       if (filters.location !== 'All') params.append('location', filters.location);
+      
+      fetchExternalJobs(params.toString()); // Calling context instead of local fetch
+    }, 500);
 
-      const response = await fetch(`http://localhost:5000/api/jobs/external?${params.toString()}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const result = await response.json();
-      setJobs(result.data || []);
-    } catch (err) {
-      console.error("Failed to fetch jobs:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    return () => clearTimeout(delayDebounceFn);
+  }, [filters, searchTerm, fetchExternalJobs]);
 
   const resetFilters = () => {
     setFilters({ jobType: "All", postedWithin: "All", location: "All" });
@@ -112,6 +97,7 @@ const JobBoard = () => {
               </button>
             </div>
 
+            {/* Role Filter */}
             <div className="mb-8">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-4">Employment Type</label>
               <div className="space-y-3">
@@ -130,6 +116,7 @@ const JobBoard = () => {
               </div>
             </div>
 
+            {/* Date Filter */}
             <div className="mb-8">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-4">Date Posted</label>
               <div className="space-y-3">
@@ -152,6 +139,7 @@ const JobBoard = () => {
               </div>
             </div>
 
+            {/* Location Filter */}
             <div>
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-4">Location</label>
               <select 
@@ -171,7 +159,7 @@ const JobBoard = () => {
         <main className="lg:col-span-3">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 font-mono">
-              Live Opportunities // {filteredJobs.length} Results {/* Changed to filtered count */}
+              Live Opportunities // {filteredJobs.length} Results
             </h3>
           </div>
 
@@ -182,7 +170,7 @@ const JobBoard = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {filteredJobs.map(job => ( // Changed to map over filteredJobs
+              {filteredJobs.map(job => (
                 <div key={job.id} className="bg-white border border-slate-200 rounded-xl p-6 hover:shadow-xl hover:shadow-indigo-900/[0.03] hover:border-indigo-200 transition-all duration-300 group">
                   <div className="flex flex-col lg:flex-row gap-6 lg:items-center">
                     <div className="w-12 h-12 bg-slate-900 text-white rounded-lg flex items-center justify-center font-black text-xl shrink-0 group-hover:bg-indigo-600 transition-colors">

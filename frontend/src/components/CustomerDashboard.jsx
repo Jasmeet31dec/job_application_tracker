@@ -1,40 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { 
   Briefcase, Target, PieChart, Clock, 
   TrendingUp, CheckCircle2, XCircle, 
   ChevronRight, ArrowUpRight, Ghost
 } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 
 const CustomerDashboard = () => {
-  const [apps, setApps] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem("token");
+  // Use global state and actions from AppContext
+  const { applications, fetchMyApplications, loading } = useApp();
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const response = await fetch("http://localhost:5000/api/applications/my-applications", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const result = await response.json();
-        setApps(result.data || []);
-      } catch (err) {
-        console.error("Dashboard fetch error", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchStats();
-  }, [token]);
+    fetchMyApplications();
+  }, []);
 
-  // Derived Analytics Logic
+  // Derived Analytics Logic - Using 'applications' from Context
   const stats = {
-    total: apps.length,
-    interviews: apps.filter(a => a.status === 'Interviewing').length,
-    offers: apps.filter(a => a.status === 'Offer').length,
-    ghosted: apps.filter(a => a.status === 'Ghosted').length,
-    rejected: apps.filter(a => a.status === 'Rejected').length,
-    saved: apps.filter(a => a.status === 'Saved').length, // Added saved count
+    total: applications.length,
+    interviews: applications.filter(a => a.status === 'Interviewing').length,
+    offers: applications.filter(a => a.status === 'Offer').length,
+    ghosted: applications.filter(a => a.status === 'Ghosted').length,
+    rejected: applications.filter(a => a.status === 'Rejected').length,
+    saved: applications.filter(a => a.status === 'Saved').length,
   };
 
   const responseRate = stats.total > 0 
@@ -87,8 +74,8 @@ const CustomerDashboard = () => {
             
             <div className="space-y-6">
               {[
-                { label: 'Saved', count: stats.saved, color: 'bg-indigo-400' }, // Added Saved to Breakdown
-                { label: 'Applied', count: apps.filter(a => a.status === 'Applied').length, color: 'bg-blue-500' },
+                { label: 'Saved', count: stats.saved, color: 'bg-indigo-400' },
+                { label: 'Applied', count: applications.filter(a => a.status === 'Applied').length, color: 'bg-blue-500' },
                 { label: 'Interviewing', count: stats.interviews, color: 'bg-amber-500' },
                 { label: 'Offer', count: stats.offers, color: 'bg-emerald-500' },
                 { label: 'Ghosted', count: stats.ghosted, color: 'bg-slate-400' },
@@ -133,7 +120,7 @@ const CustomerDashboard = () => {
                 Recent <ChevronRight size={16} className="text-indigo-600"/>
               </h3>
               <div className="space-y-4">
-                {apps.slice(0, 3).map((job, i) => (
+                {applications.slice(0, 3).map((job, i) => (
                   <div key={i} className="flex items-center gap-4 p-3 hover:bg-slate-50 rounded-2xl transition">
                     <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-bold text-slate-400">
                       {job.company?.charAt(0)}
