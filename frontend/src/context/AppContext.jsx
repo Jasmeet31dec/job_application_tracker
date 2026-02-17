@@ -4,6 +4,7 @@ const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
   const [jobs, setJobs] = useState([]);
+  const [users,setUsers] = useState([]);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -48,6 +49,7 @@ export const AppProvider = ({ children }) => {
       position: jobData.title,
       company: jobData.company,
       jobLocation: jobData.location,
+      jobId: jobData.id,
       jobType: jobData.type,
       status: status,
       applicationLink: jobData.applyLink,
@@ -65,20 +67,21 @@ export const AppProvider = ({ children }) => {
   }, [apiRequest]);
 
   const updateApplicationStatus = useCallback(async (id, newStatus) => {
-    // We use functional update setApplications(prev => ...) 
-    // to avoid adding 'applications' as a dependency to this useCallback
-    let originalApps;
-    setApplications(prev => {
-      originalApps = prev;
-      return prev.map(app => app._id === id ? { ...app, status: newStatus } : app);
-    });
+    // 1. Update UI Instantly (Optimistic)
+    setApplications(prev => prev.map(app =>
+      app._id === id ? { ...app, status: newStatus } : app
+    ));
 
-    const data = await apiRequest(`/applications/my-applications/${id}/status`, {
-      method: 'PATCH',
-      body: JSON.stringify({ status: newStatus })
-    });
-
-    if (!data) setApplications(originalApps); 
+    // 2. Perform API call in background
+    try {
+      await apiRequest(`/applications/my-applications/${id}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: newStatus })
+      });
+    } catch (err) {
+      // Rollback on error if necessary
+      fetchMyApplications();
+    }
   }, [apiRequest]);
 
   const deleteApplication = useCallback(async (id) => {
@@ -90,10 +93,21 @@ export const AppProvider = ({ children }) => {
     }
   }, [apiRequest]);
 
+  //fetch user details
+  const fetchUserDetails = useCallback(async () => {
+  const data = await apiRequest("/users",{
+    method: 'GET'
+  }); 
+  if (data){
+    setUsers(data);
+  }
+}, [apiRequest]);
+
   // 3. Memoized Context Value
   // This ensures the object provided to the app only changes when data actually changes
   const value = useMemo(() => ({
     jobs,
+    users,
     applications,
     loading,
     error,
@@ -102,11 +116,12 @@ export const AppProvider = ({ children }) => {
     trackApplication,
     fetchMyApplications,
     updateApplicationStatus,
-    deleteApplication
+    deleteApplication,
+    fetchUserDetails
   }), [
-    jobs, applications, loading, error, 
-    fetchExternalJobs, fetchJobDetails, trackApplication, 
-    fetchMyApplications, updateApplicationStatus, deleteApplication
+    jobs, users,applications, loading, error,
+    fetchExternalJobs, fetchJobDetails, trackApplication,
+    fetchMyApplications, updateApplicationStatus, deleteApplication,fetchUserDetails
   ]);
 
   return (

@@ -10,7 +10,7 @@ import { useApp } from '../context/AppContext';
 const JobDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { fetchJobDetails, trackApplication } = useApp();
+    const { fetchJobDetails, trackApplication, applications} = useApp();
     
     const [job, setJob] = useState(null);
     const [localLoading, setLocalLoading] = useState(true);
@@ -25,13 +25,17 @@ const JobDetails = () => {
             const data = await fetchJobDetails(id);
             if (isMounted && data) {
                 setJob(data);
+                const alreadySaved = applications.some(app => 
+                    app.jobId === id && app.status?.toLowerCase() === 'saved'
+                );
+                setIsSaved(alreadySaved);
                 setLocalLoading(false);
             }
         };
 
         loadData();
         return () => { isMounted = false; };
-    }, [id, fetchJobDetails]); 
+    }, [id, fetchJobDetails,applications]); 
 
     const handleSaveJob = async () => {
         if (isSaved) return;

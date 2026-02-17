@@ -2,38 +2,31 @@ import React, { useState, useEffect } from 'react';
 import { 
   Users, Shield, Search, Trash2, 
   ShieldCheck, Mail, Calendar, Activity, 
-  Loader2, Filter, ChevronRight
+  Loader2, Filter
 } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 
 const AdminDashboard = () => {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Use global state and actions from Context
+  const { fetchUserDetails, users, loading } = useApp();
+  
   const [searchTerm, setSearchTerm] = useState("");
-  const token = localStorage.getItem("token");
 
-  // Logic: Fetching all users
+  // Trigger fetch on mount
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch("http://localhost:5000/api/users", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const result = await response.json();
-        setUsers(result.data || result);
-      } catch (err) {
-        console.error("Admin fetch failed", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUsers();
-  }, [token]);
+    fetchUserDetails();
+  }, [fetchUserDetails]);
 
-  const filteredUsers = users.filter(user => 
-    user.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    user.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // DERIVED STATE: Filter users based on search
+  const filteredUsers = searchTerm === ""
+  ? users
+  : users.filter(user =>
+      user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+
+  console.log(users);
 
   const stats = [
     { label: 'Total Users', value: users.length, icon: <Users size={20} />, color: 'bg-indigo-600' },
@@ -41,7 +34,8 @@ const AdminDashboard = () => {
     { label: 'System Load', value: 'Optimal', icon: <Activity size={20} />, color: 'bg-emerald-500' },
   ];
 
-  if (loading) {
+  // Use the global loading state
+  if (loading && users.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[500px]">
         <Loader2 className="animate-spin text-indigo-600 mb-4" size={40} />
@@ -54,7 +48,7 @@ const AdminDashboard = () => {
     <div className="p-8 bg-slate-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
         
-        {/* Header */}
+        {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
           <div>
             <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase">
@@ -78,7 +72,7 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Search Bar */}
+        {/* Search & Filter Bar */}
         <div className="bg-white p-4 rounded-2xl border border-slate-200 mb-8 flex flex-col md:flex-row gap-4 items-center justify-between">
           <div className="relative w-full max-w-xl">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
@@ -95,7 +89,7 @@ const AdminDashboard = () => {
           </button>
         </div>
 
-        {/* User Management Table */}
+        {/* Improved Responsive Table */}
         <div className="bg-white rounded-[2rem] border border-slate-200 shadow-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -109,7 +103,7 @@ const AdminDashboard = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filteredUsers.map((user) => (
+                {filteredUsers.length > 0 ? filteredUsers.map((user) => (
                   <tr key={user._id} className="hover:bg-slate-50 transition-colors group">
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-4">
@@ -148,16 +142,22 @@ const AdminDashboard = () => {
                     </td>
                     <td className="px-8 py-6 text-center">
                       <div className="flex items-center justify-center gap-2">
-                         <button className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition">
+                         <button className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition" title="Promote/Demote">
                           <ShieldCheck size={20} />
                         </button>
-                        <button className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition">
+                        <button className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition" title="Delete Account">
                           <Trash2 size={20} />
                         </button>
                       </div>
                     </td>
                   </tr>
-                ))}
+                )) : (
+                  <tr>
+                    <td colSpan="5" className="px-8 py-20 text-center font-bold text-slate-400 uppercase tracking-widest text-xs">
+                      No users found matching your search criteria
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

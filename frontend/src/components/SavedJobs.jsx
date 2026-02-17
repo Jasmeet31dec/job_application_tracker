@@ -1,61 +1,45 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Briefcase, MapPin, Calendar, Trash2, 
-  ExternalLink, ChevronLeft, Search, Filter 
+  ChevronLeft, Search 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useApp } from '../context/AppContext'; // Import your custom hook
 
 const SavedJobs = () => {
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
   
-  const [savedJobs, setSavedJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Use global state and actions from AppContext
+  const { applications, loading, fetchMyApplications, deleteApplication } = useApp();
+  
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Fetch all applications via context on mount
   useEffect(() => {
-    fetchSavedJobs();
-  }, []);
+    fetchMyApplications();
+  }, [fetchMyApplications]);
 
-  const fetchSavedJobs = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch("http://localhost:5000/api/applications/savedJobs", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const result = await response.json();
-      setSavedJobs(result.data || []);
-    } catch (err) {
-      console.error("Error fetching saved jobs:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  /**
+   * Logic: Filter the global 'applications' list for only those with 'Saved' status,
+   * then apply your search term filtering.
+   */
+  const filteredJobs = useMemo(() => {
+    return applications
+      .filter(job => job.status?.toLowerCase() === 'saved')
+      .filter(job => 
+        job.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.company.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+  }, [applications, searchTerm]);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Remove this job from your board?")) return;
-    
-    try {
-      const response = await fetch(`http://localhost:5000/api/applications/my-applications/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (response.ok) {
-        setSavedJobs(savedJobs.filter(job => job._id !== id));
-      }
-    } catch (err) {
-      console.error("Delete error:", err);
-    }
+    await deleteApplication(id); // Using the centralized delete logic
   };
 
   const handleJobDetails = (id) => {
     navigate(`/jobs/${id}`);
   };
-
-  const filteredJobs = savedJobs.filter(job => 
-    job.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    job.company.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
@@ -108,7 +92,7 @@ const SavedJobs = () => {
           </div>
         </div>
 
-        {loading ? (
+        {loading && applications.length === 0 ? (
           <div className="py-20 flex flex-col items-center gap-4">
             <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gathering your data...</p>
@@ -130,8 +114,7 @@ const SavedJobs = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredJobs.map((job) => (
-              <div key={job._id} className="bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-xl hover:shadow-indigo-900/[0.03] hover:border-indigo-100 transition-all group relative overflow-hidden">
-                {/* Status Badge */}
+              <div key={job._id} className="bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-xl hover:shadow-indigo-900/[0.03] hover:border-indigo-200 transition-all group relative overflow-hidden">
                 <div className={`absolute top-0 right-0 px-4 py-1.5 rounded-bl-xl text-[10px] font-black uppercase tracking-widest border-l border-b ${getStatusColor(job.status)}`}>
                   {job.status}
                 </div>

@@ -1,14 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import {
     Building2, MapPin, Briefcase, ExternalLink,
     Plus, Loader2, ClipboardList, Ghost, Trash2,
     Calendar
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useApp } from '../context/AppContext'; // Import your hook
+import { useApp } from '../context/AppContext';
 
 const MyApplications = () => {
-    // Pull global state and actions from Context
     const { 
         applications, 
         loading, 
@@ -29,7 +28,31 @@ const MyApplications = () => {
         fetchMyApplications();
     }, [fetchMyApplications]);
 
-    // --- Drag and Drop Logic ---
+    /**
+     * FIX PART 1: Optimization
+     * Instead of filtering inside the JSX for every column on every render,
+     * we group applications once using useMemo. This ensures React re-renders
+     * cleanly the moment the context state changes.
+     */
+    const groupedApps = useMemo(() => {
+        const groups = {
+            Applied: [],
+            Interviewing: [],
+            Offer: [],
+            Rejected: [],
+            Ghosted: []
+        };
+        
+        applications.forEach(app => {
+            // Normalize status to match column IDs
+            const status = app.status;
+            if (groups[status]) {
+                groups[status].push(app);
+            }
+        });
+        return groups;
+    }, [applications]);
+
     const handleDragStart = (e, id) => {
         e.dataTransfer.setData("applicationId", id);
     };
@@ -38,9 +61,16 @@ const MyApplications = () => {
         e.preventDefault(); 
     };
 
-    const handleDrop = async (e, newStatus) => {
+    const handleDrop = (e, newStatus) => {
         const id = e.dataTransfer.getData("applicationId");
-        await updateApplicationStatus(id, newStatus);
+        if (!id) return;
+        
+        /**
+         * FIX PART 2: Non-blocking call
+         * We don't 'await' here for the UI to update. The updateApplicationStatus 
+         * function in AppContext should update the local state immediately.
+         */
+        updateApplicationStatus(id, newStatus);
     };
 
     const handleDelete = async (id) => {
@@ -84,18 +114,19 @@ const MyApplications = () => {
                                     <h2 className="font-bold text-slate-700 uppercase tracking-widest text-xs">{col.title}</h2>
                                 </div>
                                 <span className="bg-white border border-slate-200 text-slate-600 text-[10px] font-black px-2 py-0.5 rounded-md shadow-sm">
-                                    {applications.filter(a => a.status === col.id).length}
+                                    {groupedApps[col.id]?.length || 0}
                                 </span>
                             </div>
 
                             <div className="bg-slate-200/50 p-2.5 rounded-2xl min-h-[600px] space-y-4 border-2 border-dashed border-slate-200/60 transition-colors hover:bg-slate-200/80">
-                                {applications.filter(app => app.status === col.id).map((app) => (
+                                {groupedApps[col.id]?.map((app) => (
                                     <div
                                         key={app._id}
                                         draggable
                                         onDragStart={(e) => handleDragStart(e, app._id)}
                                         className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-indigo-400 transition-all duration-300 group cursor-grab active:cursor-grabbing"
                                     >
+                                        {/* ... Rest of your card UI is exactly the same ... */}
                                         <div className="flex justify-between items-start mb-1">
                                             <h3 className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors leading-snug">
                                                 {app.position}
@@ -106,10 +137,7 @@ const MyApplications = () => {
                                                         <ExternalLink size={14} />
                                                     </a>
                                                 )}
-                                                <button 
-                                                    onClick={() => handleDelete(app._id)}
-                                                    className="text-slate-300 hover:text-rose-500 transition opacity-0 group-hover:opacity-100"
-                                                >
+                                                <button onClick={() => handleDelete(app._id)} className="text-slate-300 hover:text-rose-500 transition opacity-0 group-hover:opacity-100">
                                                     <Trash2 size={14} />
                                                 </button>
                                             </div>
@@ -117,8 +145,7 @@ const MyApplications = () => {
 
                                         <div className="flex items-center justify-between mb-4">
                                             <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                                                <Building2 size={12} />
-                                                {app.company}
+                                                <Building2 size={12} /> {app.company}
                                             </div>
                                             <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400">
                                                 <Calendar size={11} className="text-slate-300"/>
@@ -135,17 +162,10 @@ const MyApplications = () => {
                                             </div>
                                         </div>
 
-                                        {app.status === 'Ghosted' && (
-                                            <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-bold mb-3 italic">
-                                                <Ghost size={12} /> No response received
-                                            </div>
-                                        )}
-
                                         {app.notes && (
                                             <div className="bg-slate-50/80 rounded-lg p-3 border border-slate-100 mt-2">
                                                 <p className="text-[11px] text-slate-500 leading-relaxed italic line-clamp-2">
-                                                    <ClipboardList size={10} className="inline mr-1 opacity-70" />
-                                                    {app.notes}
+                                                    <ClipboardList size={10} className="inline mr-1 opacity-70" /> {app.notes}
                                                 </p>
                                             </div>
                                         )}
