@@ -25,9 +25,6 @@ const AdminDashboard = () => {
       user.email?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-
-  console.log(users);
-
   const stats = [
     { label: 'Total Users', value: users.length, icon: <Users size={20} />, color: 'bg-indigo-600' },
     { label: 'Admin Roles', value: users.filter(u => u.role === 'admin').length, icon: <Shield size={20} />, color: 'bg-slate-900' },

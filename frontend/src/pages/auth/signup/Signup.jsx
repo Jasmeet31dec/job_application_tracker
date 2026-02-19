@@ -25,7 +25,6 @@ const Signup = () => {
         body:JSON.stringify(formData)
       })
       const result = await response.json();
-      console.log(result);
       navigate("/login");
     } catch (error) {
       console.error(error.message);

@@ -14,6 +14,7 @@ import WhyTrackly from "./components/WhyTrackly.jsx";
 import JobBoard from "./components/JobBoard.jsx";
 import JobDetails from "./components/JobDetails.jsx";
 import SavedJobs from "./components/SavedJobs.jsx";
+import ResumeBuilder from "./components/ResumeBuilder.jsx";
 
 
 
@@ -23,6 +24,7 @@ export default function App() {
     <AppProvider>
       <Routes>
         <Route path="/" element={<LayoutWithNavbar><LandingPage></LandingPage></LayoutWithNavbar>}></Route>
+        <Route path='/build-resume' element={<ResumeBuilder></ResumeBuilder>}></Route>
         <Route path='/login' element={<Login></Login>}></Route>
         <Route path='/signup' element={<Signup></Signup>}></Route>
         <Route path='/features' element={<LayoutWithNavbar><Features></Features></LayoutWithNavbar>}></Route>

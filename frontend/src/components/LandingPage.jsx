@@ -1,6 +1,7 @@
 import React from 'react';
 import { Layout, Target, PieChart, Bell, CheckCircle2, ArrowRight } from 'lucide-react';
 import Footer from './Footer';
+import { Link } from 'react-router-dom';
 
 const LandingPage = () => {
   return (
@@ -23,9 +24,9 @@ const LandingPage = () => {
           Trackly is the central hub for your job search. Organize applications, set reminders, and gain insights to get hired faster.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <button className="w-full sm:w-auto bg-slate-900 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-slate-800 transition flex items-center justify-center gap-2">
+          <Link to='/build-resume' className="w-full sm:w-auto bg-slate-900 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-slate-800 transition flex items-center justify-center gap-2">
             Build Resume Free <ArrowRight size={20} />
-          </button>
+          </Link>
           <button className="w-full sm:w-auto bg-white border border-slate-200 text-slate-700 px-8 py-4 rounded-xl font-bold text-lg hover:bg-slate-50 transition">
             View Demo
           </button>

@@ -25,7 +25,7 @@ export const AppProvider = ({ children }) => {
         },
       });
       const result = await response.json();
-      return result.data;
+      return result.data? result.data: result;
     } catch (err) {
       console.error("API Request Error:", err);
       return null;

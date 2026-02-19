@@ -1,3 +1,5 @@
+require("dotenv").config({ path: "../.env" });
+
 const express = require("express");
 const cors = require("cors");
 
@@ -6,8 +8,10 @@ const loginRoute = require("./routes/login");
 const userRoute = require("./routes/user");
 const applicationRoutes = require("./routes/applicationRoutes");
 const jobRoutes = require("./routes/jobRoutes");
+const resumeRoutes = require("./routes/resumeRoutes");
 const bodyParser = require("body-parser");
 const createAdminAccount = require("./scripts/admin");
+
 
 
 const app = express();
@@ -23,6 +27,7 @@ app.use("/auth", loginRoute);
 app.use("/api", userRoute);
 app.use("/api/applications", applicationRoutes);
 app.use('/api/jobs', jobRoutes);
+app.use('/api/resume',resumeRoutes);
 
 
 
