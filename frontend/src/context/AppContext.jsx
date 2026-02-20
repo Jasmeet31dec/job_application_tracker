@@ -4,10 +4,13 @@ const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
   const [jobs, setJobs] = useState([]);
-  const [users,setUsers] = useState([]);
+  const [users, setUsers] = useState([]);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [userApplications, setUserApplications] = useState([]);
 
   const API_BASE_URL = "http://localhost:5000/api";
   const token = localStorage.getItem("token");
@@ -25,7 +28,7 @@ export const AppProvider = ({ children }) => {
         },
       });
       const result = await response.json();
-      return result.data? result.data: result;
+      return result.data ? result.data : result;
     } catch (err) {
       console.error("API Request Error:", err);
       return null;
@@ -95,12 +98,23 @@ export const AppProvider = ({ children }) => {
 
   //fetch user details
   const fetchUserDetails = useCallback(async () => {
-  const data = await apiRequest("/users",{
-    method: 'GET'
-  }); 
-  if (data){
-    setUsers(data);
-  }
+    const data = await apiRequest("/users", {
+      method: 'GET'
+    });
+    if (data) {
+      setUsers(data);
+    }
+  }, [apiRequest]);
+
+  const fetchUserApplications = useCallback(async (userId) => {
+    try {
+        const data = await apiRequest(`/admin/user-applications/${userId}`);
+        if (data) {
+            setUserApplications(data);
+        }
+    } catch (error) {
+        console.error("Error fetching user applications:", error);
+    }
 }, [apiRequest]);
 
   // 3. Memoized Context Value
@@ -111,6 +125,10 @@ export const AppProvider = ({ children }) => {
     applications,
     loading,
     error,
+    selectedUser, 
+    setSelectedUser,
+    userApplications,
+    fetchUserApplications,
     fetchExternalJobs,
     fetchJobDetails,
     trackApplication,
@@ -119,9 +137,9 @@ export const AppProvider = ({ children }) => {
     deleteApplication,
     fetchUserDetails
   }), [
-    jobs, users,applications, loading, error,
+    jobs, users, applications, loading, error,
     fetchExternalJobs, fetchJobDetails, trackApplication,
-    fetchMyApplications, updateApplicationStatus, deleteApplication,fetchUserDetails
+    fetchMyApplications, updateApplicationStatus, deleteApplication, fetchUserDetails
   ]);
 
   return (

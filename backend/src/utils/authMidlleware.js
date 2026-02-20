@@ -21,8 +21,20 @@ function authenticateToken(req, res, next) {
   });
 }
 
+const adminMiddleware = (req, res, next) => {
+    // 1. Check if user exists and if their role is admin
+    if (req.user && req.user.role === 'admin') {
+        next(); // User is admin, proceed to the controller
+    } else {
+        // 2. If not admin, return 403 Forbidden
+        return res.status(403).json({ 
+            message: "Access denied. Admin resources only." 
+        });
+    }
+};
+
 function verifyToken(token){
   return jwt.verify(token,secretKey);
 }
 
-module.exports = { authenticateToken , verifyToken};
+module.exports = { authenticateToken ,adminMiddleware, verifyToken};

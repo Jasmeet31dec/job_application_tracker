@@ -1,23 +1,57 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom'; // 1. Added for query params
 import { 
   Users, Shield, Search, Trash2, 
   ShieldCheck, Mail, Calendar, Activity, 
   Loader2, Filter
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import UserDetails from '../components/UserDetails';
 
 const AdminDashboard = () => {
-  // Use global state and actions from Context
-  const { fetchUserDetails, users, loading } = useApp();
-  
-  const [searchTerm, setSearchTerm] = useState("");
+  const { 
+    fetchUserDetails, 
+    users, 
+    loading, 
+    selectedUser, 
+    setSelectedUser, 
+    userApplications, 
+    fetchUserApplications 
+  } = useApp();
 
-  // Trigger fetch on mount
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams(); // 2. Initialize search params
+
+  // 3. Get userId from query params (?userId=...)
+  const userIdFromUrl = searchParams.get('userId');
+
   useEffect(() => {
     fetchUserDetails();
   }, [fetchUserDetails]);
 
-  // DERIVED STATE: Filter users based on search
+  // 4. Sync URL state with App Context
+  useEffect(() => {
+    if (userIdFromUrl && users.length > 0) {
+      const user = users.find(u => u._id === userIdFromUrl);
+      if (user) {
+        setSelectedUser(user);
+        fetchUserApplications(user._id);
+      }
+    } else if (!userIdFromUrl) {
+      setSelectedUser(null);
+    }
+  }, [userIdFromUrl, users, setSelectedUser, fetchUserApplications]);
+
+  // 5. Update URL instead of just state on click
+  const handleUserClick = (user) => {
+    setSearchParams({ userId: user._id });
+  };
+
+  // 6. Clear URL on back
+  const handleBack = () => {
+    setSearchParams({});  // Removes all query params
+  };
+
   const filteredUsers = searchTerm === ""
   ? users
   : users.filter(user =>
@@ -31,12 +65,26 @@ const AdminDashboard = () => {
     { label: 'System Load', value: 'Optimal', icon: <Activity size={20} />, color: 'bg-emerald-500' },
   ];
 
-  // Use the global loading state
   if (loading && users.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[500px]">
         <Loader2 className="animate-spin text-indigo-600 mb-4" size={40} />
         <p className="text-slate-400 font-bold tracking-widest uppercase text-xs">Loading Admin Terminal...</p>
+      </div>
+    );
+  }
+
+  // --- VIEW TOGGLE BASED ON SELECTED USER ---
+  if (selectedUser) {
+    return (
+      <div className="p-8 bg-slate-50 min-h-screen">
+        <div className="max-w-7xl mx-auto">
+          <UserDetails 
+            user={selectedUser} 
+            applications={userApplications} 
+            onBack={handleBack} 
+          />
+        </div>
       </div>
     );
   }
@@ -86,7 +134,7 @@ const AdminDashboard = () => {
           </button>
         </div>
 
-        {/* Improved Responsive Table */}
+        {/* Original Table Format */}
         <div className="bg-white rounded-[2rem] border border-slate-200 shadow-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -101,7 +149,11 @@ const AdminDashboard = () => {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredUsers.length > 0 ? filteredUsers.map((user) => (
-                  <tr key={user._id} className="hover:bg-slate-50 transition-colors group">
+                  <tr 
+                    key={user._id} 
+                    onClick={() => handleUserClick(user)} 
+                    className="hover:bg-indigo-50/30 cursor-pointer transition-colors group"
+                  >
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white font-black text-lg">
@@ -138,7 +190,7 @@ const AdminDashboard = () => {
                       </div>
                     </td>
                     <td className="px-8 py-6 text-center">
-                      <div className="flex items-center justify-center gap-2">
+                      <div className="flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
                          <button className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition" title="Promote/Demote">
                           <ShieldCheck size={20} />
                         </button>

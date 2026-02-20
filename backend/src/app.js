@@ -9,6 +9,7 @@ const userRoute = require("./routes/user");
 const applicationRoutes = require("./routes/applicationRoutes");
 const jobRoutes = require("./routes/jobRoutes");
 const resumeRoutes = require("./routes/resumeRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 const bodyParser = require("body-parser");
 const createAdminAccount = require("./scripts/admin");
 
@@ -28,8 +29,7 @@ app.use("/api", userRoute);
 app.use("/api/applications", applicationRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/resume',resumeRoutes);
-
-
+app.use('/api/admin',adminRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on : http://localhost:${PORT}`);
