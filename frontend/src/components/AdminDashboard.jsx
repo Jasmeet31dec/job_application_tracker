@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom'; // 1. Added for query params
+import { useNavigate, useSearchParams } from 'react-router-dom'; // 1. Added for query params
 import { 
   Users, Shield, Search, Trash2, 
   ShieldCheck, Mail, Calendar, Activity, 
@@ -12,44 +12,20 @@ const AdminDashboard = () => {
   const { 
     fetchUserDetails, 
     users, 
-    loading, 
-    selectedUser, 
-    setSelectedUser, 
+    loading,  
     userApplications, 
-    fetchUserApplications 
   } = useApp();
 
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [searchParams, setSearchParams] = useSearchParams(); // 2. Initialize search params
-
-  // 3. Get userId from query params (?userId=...)
-  const userIdFromUrl = searchParams.get('userId');
 
   useEffect(() => {
     fetchUserDetails();
   }, [fetchUserDetails]);
 
-  // 4. Sync URL state with App Context
-  useEffect(() => {
-    if (userIdFromUrl && users.length > 0) {
-      const user = users.find(u => u._id === userIdFromUrl);
-      if (user) {
-        setSelectedUser(user);
-        fetchUserApplications(user._id);
-      }
-    } else if (!userIdFromUrl) {
-      setSelectedUser(null);
-    }
-  }, [userIdFromUrl, users, setSelectedUser, fetchUserApplications]);
-
-  // 5. Update URL instead of just state on click
   const handleUserClick = (user) => {
-    setSearchParams({ userId: user._id });
-  };
-
-  // 6. Clear URL on back
-  const handleBack = () => {
-    setSearchParams({});  // Removes all query params
+    navigate(`user/${user._id}`);
   };
 
   const filteredUsers = searchTerm === ""
@@ -70,21 +46,6 @@ const AdminDashboard = () => {
       <div className="flex flex-col items-center justify-center min-h-[500px]">
         <Loader2 className="animate-spin text-indigo-600 mb-4" size={40} />
         <p className="text-slate-400 font-bold tracking-widest uppercase text-xs">Loading Admin Terminal...</p>
-      </div>
-    );
-  }
-
-  // --- VIEW TOGGLE BASED ON SELECTED USER ---
-  if (selectedUser) {
-    return (
-      <div className="p-8 bg-slate-50 min-h-screen">
-        <div className="max-w-7xl mx-auto">
-          <UserDetails 
-            user={selectedUser} 
-            applications={userApplications} 
-            onBack={handleBack} 
-          />
-        </div>
       </div>
     );
   }

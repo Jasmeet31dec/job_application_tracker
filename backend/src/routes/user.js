@@ -8,5 +8,6 @@ const router = express.Router();
 router.use(cors());
 
 router.get("/users", authMiddleware.authenticateToken, userController.getUsers);
+router.get("/users/:userId", authMiddleware.authenticateToken, userController.getUserDetails);
 
 module.exports = router;

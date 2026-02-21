@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { jwtDecode } from 'jwt-decode';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Briefcase, Menu, X } from 'lucide-react';
 
@@ -7,14 +8,27 @@ const Navbar = () => {
   const location = useLocation(); // Hook to track the current URL path
   const [isOpen, setIsOpen] = useState(false);
   const token = localStorage.getItem("token");
+  let decoded = null;
 
   let navLinks = [];
   if (token) {
-    navLinks = [
+    try {
+      decoded = jwtDecode(token);
+    } catch (err) {
+      console.error("Invalid token session:", err);
+      // Optionally: localStorage.removeItem("token");
+    }
+
+    {decoded?.role === 'admin'? navLinks = [
+      { name: 'Dashboard', href: '/dashboard' },
+      { name: 'Job Board', href: '/jobs' },
+    ]:navLinks = [
       { name: 'Dashboard', href: '/dashboard' },
       { name: 'Applications', href: '/applications' },
       { name: 'Job Board', href: '/jobs' },
-    ];
+    ]
+  }
+    
   } else {
     navLinks = [
       { name: 'Features', href: '/features' },
@@ -31,7 +45,7 @@ const Navbar = () => {
     <nav className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20">
-          
+
           {/* Logo Section */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center gap-2 group">
@@ -51,11 +65,10 @@ const Navbar = () => {
                   <Link
                     key={link.name}
                     to={link.href}
-                    className={`px-1 pt-1 text-sm font-semibold transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:bg-indigo-600 after:transition-all hover:after:w-full ${
-                      isActive 
-                        ? 'text-indigo-600 after:w-full' 
+                    className={`px-1 pt-1 text-sm font-semibold transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:bg-indigo-600 after:transition-all hover:after:w-full ${isActive
+                        ? 'text-indigo-600 after:w-full'
                         : 'text-slate-600 hover:text-indigo-600 after:w-0'
-                    }`}
+                      }`}
                   >
                     {link.name}
                   </Link>
@@ -115,11 +128,10 @@ const Navbar = () => {
                   key={link.name}
                   to={link.href}
                   onClick={() => setIsOpen(false)}
-                  className={`block py-3 px-4 text-base font-bold rounded-xl transition ${
-                    isActive 
-                      ? 'text-indigo-600 bg-indigo-50' 
+                  className={`block py-3 px-4 text-base font-bold rounded-xl transition ${isActive
+                      ? 'text-indigo-600 bg-indigo-50'
                       : 'text-slate-700 hover:text-indigo-600 hover:bg-indigo-50'
-                  }`}
+                    }`}
                 >
                   {link.name}
                 </Link>

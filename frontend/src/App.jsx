@@ -15,6 +15,7 @@ import JobBoard from "./components/JobBoard.jsx";
 import JobDetails from "./components/JobDetails.jsx";
 import SavedJobs from "./components/SavedJobs.jsx";
 import ResumeBuilder from "./components/ResumeBuilder.jsx";
+import UserDetails from "./components/UserDetails.jsx";
 
 
 
@@ -34,8 +35,12 @@ export default function App() {
             <RoleBasedDashboard></RoleBasedDashboard>
           </LayoutWithNavbar>
         }>
-
         </Route>
+        <Route path='/dashboard/user/:userId' element={
+            <LayoutWithNavbar>
+              <UserDetails></UserDetails>
+            </LayoutWithNavbar>
+          }></Route>
         <Route path='/applications' element={<LayoutWithNavbar><MyApplications></MyApplications></LayoutWithNavbar>}></Route>
         <Route path='/applications/create' element={<NewApplication></NewApplication>}></Route>
         <Route path='/jobs' element={<LayoutWithNavbar><JobBoard></JobBoard></LayoutWithNavbar>}></Route>

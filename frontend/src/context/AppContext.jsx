@@ -106,6 +106,14 @@ export const AppProvider = ({ children }) => {
     }
   }, [apiRequest]);
 
+  const fetchUserById = useCallback(async (id) => {
+    const data = await apiRequest(`/users/${id}`, {
+      method: 'GET'
+    });
+    return data.user;
+    
+  }, [apiRequest]);
+
   const fetchUserApplications = useCallback(async (userId) => {
     try {
         const data = await apiRequest(`/admin/user-applications/${userId}`);
@@ -135,11 +143,12 @@ export const AppProvider = ({ children }) => {
     fetchMyApplications,
     updateApplicationStatus,
     deleteApplication,
-    fetchUserDetails
+    fetchUserDetails,
+    fetchUserById
   }), [
     jobs, users, applications, loading, error,
     fetchExternalJobs, fetchJobDetails, trackApplication,
-    fetchMyApplications, updateApplicationStatus, deleteApplication, fetchUserDetails
+    fetchMyApplications, updateApplicationStatus, deleteApplication, fetchUserDetails,fetchUserById
   ]);
 
   return (
