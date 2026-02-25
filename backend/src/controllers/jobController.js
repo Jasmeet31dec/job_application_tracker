@@ -36,7 +36,7 @@ const getExternalJobs = async (req, res) => {
 const getExternalJobById = async (req, res) => {
     try {
         const { id } = req.params;
-        const response = await axios.get('https://www.arbeitnow.com/api/job-board-api');
+        const response = await axios.get('https://www.arbeitnow.com/api/job-board-api',);
         const jobs = response.data.data;
 
         const jobMatch = jobs.find(j => j.slug === id);
@@ -61,6 +61,7 @@ const getExternalJobById = async (req, res) => {
         res.status(200).json({ success: true, data: formattedJob });
 
     } catch (error) {
+        
         console.error("Controller Error (Details):", error.message);
         res.status(500).json({ success: false, message: "Error retrieving job details" });
     }

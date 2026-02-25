@@ -7,6 +7,9 @@ import Signup from "./pages/auth/signup/Signup";
 import ResumeBuilder from "./components/ResumeBuilder.jsx";
 import NewApplication from "./components/NewApplication.jsx";
 import NotFound from "./pages/errorPages/NotFound.jsx";
+import GlobalError from "./pages/errorPages/GlobalError.jsx";
+import AboutUs from "./pages/static/AboutUs.jsx";
+import CareerBlog from "./pages/blog/CareerBlog.jsx";
 
 // Layout & Feature Pages
 import LayoutWithNavbar from "./pages/layout/LayoutWithNavbar.jsx";
@@ -19,6 +22,7 @@ import JobBoard from "./components/JobBoard.jsx";
 import JobDetails from "./components/JobDetails.jsx";
 import SavedJobs from "./components/SavedJobs.jsx";
 import UserDetails from "./components/UserDetails.jsx";
+
 
 /**
  * Global functional layout wrapper that adds 
@@ -51,6 +55,8 @@ const router = createBrowserRouter([
       { index: true, element: withNavbar(LandingPage) },
       { path: "features", element: withNavbar(Features) },
       { path: "whyTrackly", element: withNavbar(WhyTrackly) },
+      { path: "about", element: withNavbar(AboutUs) },
+      { path: "blog", element: withNavbar(CareerBlog) },
 
       // 2. Dashboards
       { path: "dashboard", element: withNavbar(RoleBasedDashboard) },

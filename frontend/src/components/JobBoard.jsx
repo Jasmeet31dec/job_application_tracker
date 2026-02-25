@@ -22,14 +22,16 @@ const JobBoard = () => {
    * Frontend Filtering Logic 
    * Provides instant feedback while typing, filtering the global 'jobs' state.
    */
-  const filteredJobs = jobs.filter(job => {
-    const search = searchTerm.toLowerCase();
-    return (
-      job.title?.toLowerCase().includes(search) ||
-      job.company?.toLowerCase().includes(search) ||
-      job.location?.toLowerCase().includes(search)
-    );
-  });
+  const filteredJobs = Array.isArray(jobs) 
+    ? jobs.filter(job => {
+        const search = searchTerm.toLowerCase();
+        return (
+          job.title?.toLowerCase().includes(search) ||
+          job.company?.toLowerCase().includes(search) ||
+          job.location?.toLowerCase().includes(search)
+        );
+      })
+    : [];
 
   // Debounced API call via Context Action
   useEffect(() => {
