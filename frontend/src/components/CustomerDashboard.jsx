@@ -2,26 +2,50 @@ import React, { useEffect } from 'react';
 import { 
   Briefcase, Target, PieChart, Clock, 
   TrendingUp, CheckCircle2, XCircle, 
-  ChevronRight, ArrowUpRight, Ghost
+  ChevronRight, ArrowUpRight, Ghost, Activity
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 const CustomerDashboard = () => {
-  // Use global state and actions from AppContext
   const { applications, fetchMyApplications, loading } = useApp();
 
   useEffect(() => {
     fetchMyApplications();
   }, []);
 
-  // Derived Analytics Logic - Using 'applications' from Context
+  /**
+   * 1. STRENGTHENED LOADING LOGIC
+   * We show the loading screen if:
+   * - The 'loading' state from context is true
+   * - OR 'applications' is still null/undefined (initial state before first fetch)
+   */
+  if (loading || applications === null || applications === undefined) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50">
+        <div className="relative">
+            <div className="w-20 h-20 border-4 border-slate-200 rounded-full"></div>
+            <div className="w-20 h-20 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
+            <Activity className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-indigo-600 animate-pulse" size={24} />
+        </div>
+        <p className="mt-8 text-slate-900 font-black uppercase tracking-[0.3em] text-xs">
+            Analyzing your career <span className="text-indigo-600">Trajectory...</span>
+        </p>
+        <p className="mt-2 text-slate-400 text-[10px] font-bold italic">Hang tight, we're fetching your latest updates.</p>
+      </div>
+    );
+  }
+
+  // 2. DEFENSIVE DATA WRAPPING
+  const apps = Array.isArray(applications) ? applications : [];
+
+  // 3. Derived Analytics (Only runs when data is ready)
   const stats = {
-    total: applications.length,
-    interviews: applications.filter(a => a.status === 'Interviewing').length,
-    offers: applications.filter(a => a.status === 'Offer').length,
-    ghosted: applications.filter(a => a.status === 'Ghosted').length,
-    rejected: applications.filter(a => a.status === 'Rejected').length,
-    saved: applications.filter(a => a.status === 'Saved').length,
+    total: apps.length,
+    interviews: apps.filter(a => a.status === 'Interviewing').length,
+    offers: apps.filter(a => a.status === 'Offer').length,
+    ghosted: apps.filter(a => a.status === 'Ghosted').length,
+    rejected: apps.filter(a => a.status === 'Rejected').length,
+    saved: apps.filter(a => a.status === 'Saved').length,
   };
 
   const responseRate = stats.total > 0 
@@ -35,10 +59,8 @@ const CustomerDashboard = () => {
     { label: 'Response Rate', value: `${responseRate}%`, icon: <TrendingUp size={20} />, color: 'text-blue-600', bg: 'bg-blue-50' },
   ];
 
-  if (loading) return <div className="p-8 text-center font-bold text-slate-400 animate-pulse uppercase tracking-widest">Generating Insights...</div>;
-
   return (
-    <div className="p-8 bg-slate-50 min-h-screen">
+    <div className="p-8 bg-slate-50 min-h-screen animate-in fade-in duration-700">
       <div className="max-w-7xl mx-auto">
         
         {/* Personalized Header */}
@@ -46,7 +68,7 @@ const CustomerDashboard = () => {
           <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase">
             Performance <span className="text-indigo-600">Hub</span>
           </h1>
-          <p className="text-slate-500 font-medium italic">"You miss 100% of the shots you don't take." — Trackly Insights</p>
+          <p className="text-slate-500 font-medium italic">"Data-driven insights for your professional growth."</p>
         </div>
 
         {/* Global Stats Grid */}
@@ -64,18 +86,16 @@ const CustomerDashboard = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* Application Funnel Visualizer */}
+          {/* Pipeline Breakdown */}
           <div className="lg:col-span-2 bg-white rounded-[2.5rem] border border-slate-200 p-8 shadow-sm">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
-                <PieChart size={20} className="text-indigo-600" /> Pipeline Breakdown
-              </h3>
-            </div>
+            <h3 className="font-black text-slate-900 uppercase tracking-tight flex items-center gap-2 mb-8">
+              <PieChart size={20} className="text-indigo-600" /> Pipeline Breakdown
+            </h3>
             
             <div className="space-y-6">
               {[
                 { label: 'Saved', count: stats.saved, color: 'bg-indigo-400' },
-                { label: 'Applied', count: applications.filter(a => a.status === 'Applied').length, color: 'bg-blue-500' },
+                { label: 'Applied', count: apps.filter(a => a.status === 'Applied').length, color: 'bg-blue-500' },
                 { label: 'Interviewing', count: stats.interviews, color: 'bg-amber-500' },
                 { label: 'Offer', count: stats.offers, color: 'bg-emerald-500' },
                 { label: 'Ghosted', count: stats.ghosted, color: 'bg-slate-400' },
@@ -120,9 +140,9 @@ const CustomerDashboard = () => {
                 Recent <ChevronRight size={16} className="text-indigo-600"/>
               </h3>
               <div className="space-y-4">
-                {applications.slice(0, 3).map((job, i) => (
+                {apps.slice(0, 3).map((job, i) => (
                   <div key={i} className="flex items-center gap-4 p-3 hover:bg-slate-50 rounded-2xl transition">
-                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-bold text-slate-400">
+                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-bold text-slate-400 text-xs">
                       {job.company?.charAt(0)}
                     </div>
                     <div className="flex-1 min-w-0">

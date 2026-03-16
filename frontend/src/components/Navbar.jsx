@@ -82,7 +82,7 @@ const Navbar = () => {
             {token ? (
               <Link
                 onClick={handleLogout}
-                to='/login'
+                to='/'
                 className="text-slate-600 hover:text-indigo-600 font-bold text-sm transition"
               >
                 Log out

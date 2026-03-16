@@ -10,6 +10,7 @@ import NotFound from "./pages/errorPages/NotFound.jsx";
 import GlobalError from "./pages/errorPages/GlobalError.jsx";
 import AboutUs from "./pages/static/AboutUs.jsx";
 import CareerBlog from "./pages/blog/CareerBlog.jsx";
+import ContactUs from "./pages/static/ContactUs.jsx";
 
 // Layout & Feature Pages
 import LayoutWithNavbar from "./pages/layout/LayoutWithNavbar.jsx";
@@ -57,6 +58,7 @@ const router = createBrowserRouter([
       { path: "whyTrackly", element: withNavbar(WhyTrackly) },
       { path: "about", element: withNavbar(AboutUs) },
       { path: "blog", element: withNavbar(CareerBlog) },
+      { path: "contact", element: withNavbar(ContactUs) },
 
       // 2. Dashboards
       { path: "dashboard", element: withNavbar(RoleBasedDashboard) },
@@ -76,7 +78,7 @@ const router = createBrowserRouter([
       { path: "login", element: <Login /> },
       { path: "signup", element: <Signup /> },
 
-      // 6. Fallback
+      // 7. Fallback
       { path: "*", element: <NotFound /> },
     ],
   },

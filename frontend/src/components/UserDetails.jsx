@@ -4,7 +4,7 @@ import {
   ShieldCheck, Eye, MapPin, Building2, 
   Users, Loader2, Clock 
 } from 'lucide-react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 
 const UserDetails = () => {
@@ -12,6 +12,7 @@ const UserDetails = () => {
   const { userApplications, fetchUserApplications, fetchUserById } = useApp();
   const [currentUser, setCurrentUser] = useState(null);
   const [isDataLoading, setIsDataLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const loadData = async () => {
@@ -158,7 +159,10 @@ const UserDetails = () => {
                 }`}>
                   {app.status || 'Under Review'}
                 </div>
-                <button className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.1em] hover:bg-indigo-600 transition-all shadow-md active:scale-95">
+                <button 
+                className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.1em] hover:bg-indigo-600 transition-all shadow-md active:scale-95"
+                onClick={() => navigate(`/admin/applications/${app._id}`)}
+                >
                   <Eye size={16} /> View Details
                 </button>
               </div>

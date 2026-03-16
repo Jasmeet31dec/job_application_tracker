@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const JobApplication = require("../models/jobApplication");
 
 const getUsers = async (req, res) => {
   const users = await User.find({});
@@ -15,4 +16,19 @@ const getUserById = async (userId) => {
     }
 };
 
-module.exports = { getUsers,getUserById };
+const deleteUserById = async (userId) => {
+    
+    const user = await User.findById(userId);
+
+    if (!user) {
+        throw new Error('UserNotFound');
+    }
+
+    await User.findByIdAndDelete(userId);
+    
+    await JobApplication.deleteMany({ user: userId });
+
+    return { success: true };
+};
+
+module.exports = { getUsers,getUserById,deleteUserById };

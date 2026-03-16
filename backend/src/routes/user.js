@@ -9,5 +9,6 @@ router.use(cors());
 
 router.get("/users", authMiddleware.authenticateToken, userController.getUsers);
 router.get("/users/:userId", authMiddleware.authenticateToken, userController.getUserDetails);
+router.delete("/delete/:userId", authMiddleware.authenticateToken, userController.deleteUser);
 
 module.exports = router;

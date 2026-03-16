@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
-
+import { dummyJobs } from '../data/dummyJobs';
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
@@ -14,7 +14,7 @@ export const AppProvider = ({ children }) => {
 
   const API_BASE_URL = "http://localhost:5000/api";
   const token = localStorage.getItem("token");
-
+  
   // 1. Memoized API Helper
   const apiRequest = useCallback(async (endpoint, options = {}) => {
     setLoading(true);
@@ -40,7 +40,8 @@ export const AppProvider = ({ children }) => {
   // 2. Memoized Actions
   const fetchExternalJobs = useCallback(async (params = "") => {
     const data = await apiRequest(`/jobs/external?${params}`);
-    if (data) setJobs(data);
+    if (data){setJobs(data);}
+    else{ setJobs(dummyJobs);}
   }, [apiRequest]);
 
   const fetchJobDetails = useCallback(async (id) => {
@@ -125,6 +126,26 @@ export const AppProvider = ({ children }) => {
     }
 }, [apiRequest]);
 
+const deleteUserAction = async (userId) => {
+    try {
+      // 1. Call Backend
+      const data = await apiRequest(`/delete/${userId}`, {
+      method: 'DELETE'
+    });
+
+      if (data.success) {
+        // 2. Update Frontend State (Remove user from local array)
+        setUsers((prevUsers) => prevUsers.filter(user => user._id !== userId));
+        alert(data.message? data.message : "User deleted successfully");
+        return true;
+      }
+    } catch (error) {
+      console.error("Delete Error:", error.response?.data?.message || error.message);
+      alert(error.response?.data?.message || "Failed to delete user");
+      return false;
+    }
+  };
+
   // 3. Memoized Context Value
   // This ensures the object provided to the app only changes when data actually changes
   const value = useMemo(() => ({
@@ -144,11 +165,14 @@ export const AppProvider = ({ children }) => {
     updateApplicationStatus,
     deleteApplication,
     fetchUserDetails,
-    fetchUserById
+    fetchUserById,
+    deleteUserAction
+    
   }), [
     jobs, users, applications, loading, error,
     fetchExternalJobs, fetchJobDetails, trackApplication,
-    fetchMyApplications, updateApplicationStatus, deleteApplication, fetchUserDetails,fetchUserById
+    fetchMyApplications, updateApplicationStatus, deleteApplication, fetchUserDetails,fetchUserById,
+    deleteUserAction
   ]);
 
   return (

@@ -1,19 +1,61 @@
 const axios = require('axios');
 
+// --- CACHING SETUP ---
+let jobsCache = {
+    data: null,
+    lastFetched: null
+};
+const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
+
+/**
+ * Helper function to fetch and cache data
+ * This avoids redundant code in both controllers
+ */
+const fetchAndCacheJobs = async () => {
+    const now = Date.now();
+    
+    // Check if we have valid cached data
+    if (jobsCache.data && (now - jobsCache.lastFetched < CACHE_DURATION)) {
+        console.log("Serving from cache...");
+        return jobsCache.data;
+    }
+
+    try {
+        console.log("Fetching fresh data from API...");
+        const response = await axios.get('https://www.arbeitnow.com/api/job-board-api', {
+            timeout: 8000,
+            headers: {
+                // Helps prevent 403 errors by identifying the request
+                'User-Agent': 'TracklyJobApp/1.0 (Contact: admin@example.com)'
+            }
+        });
+
+        // Update cache
+        jobsCache.data = response.data.data;
+        jobsCache.lastFetched = now;
+
+        return jobsCache.data;
+    } catch (error) {
+        // If API fails but we have stale cache, return stale cache as fallback
+        if (jobsCache.data) {
+            console.warn("API Failed, serving stale cache...");
+            return jobsCache.data;
+        }
+        throw error;
+    }
+};
+
 const getExternalJobs = async (req, res) => {
     try {
-        // Fetching from Arbeitnow (Free Public Job API)
-        const response = await axios.get('https://www.arbeitnow.com/api/job-board-api');
+        const rawJobs = await fetchAndCacheJobs();
         
-        // Mapping the data to match your frontend structure
-        const jobs = response.data.data.map(job => ({
+        const jobs = rawJobs.map(job => ({
             id: job.slug,
             title: job.title,
             company: job.company_name,
             location: job.location,
             type: job.remote ? "Remote" : "On-site",
             posted: "Recent",
-            // Creating that high-impact one-liner you wanted
             description: job.tags.slice(0, 3).join(' • ') || "Global opportunity in tech",
             url: job.url
         }));
@@ -25,10 +67,9 @@ const getExternalJobs = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("API Fetch Error:", error.message);
-        res.status(500).json({
+        res.status(503).json({
             success: false,
-            message: "Failed to fetch external jobs"
+            message: "Job service is temporarily unavailable. Please try again later."
         });
     }
 };
@@ -36,10 +77,9 @@ const getExternalJobs = async (req, res) => {
 const getExternalJobById = async (req, res) => {
     try {
         const { id } = req.params;
-        const response = await axios.get('https://www.arbeitnow.com/api/job-board-api',);
-        const jobs = response.data.data;
+        const rawJobs = await fetchAndCacheJobs();
 
-        const jobMatch = jobs.find(j => j.slug === id);
+        const jobMatch = rawJobs.find(j => j.slug === id);
 
         if (!jobMatch) {
             return res.status(404).json({ success: false, message: "Job not found" });
@@ -51,7 +91,7 @@ const getExternalJobById = async (req, res) => {
             company: jobMatch.company_name,
             location: jobMatch.location,
             type: jobMatch.job_types[0] || 'Full-time',
-            fullDescription: jobMatch.description, // Keep HTML for the details page
+            fullDescription: jobMatch.description,
             postedAt: "Live Now",
             salary: "Competitive",
             applyLink: jobMatch.url,
@@ -61,8 +101,6 @@ const getExternalJobById = async (req, res) => {
         res.status(200).json({ success: true, data: formattedJob });
 
     } catch (error) {
-        
-        console.error("Controller Error (Details):", error.message);
         res.status(500).json({ success: false, message: "Error retrieving job details" });
     }
 };

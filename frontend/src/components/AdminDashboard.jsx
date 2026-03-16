@@ -13,7 +13,8 @@ const AdminDashboard = () => {
     fetchUserDetails, 
     users, 
     loading,  
-    userApplications, 
+    userApplications,
+    deleteUserAction 
   } = useApp();
 
   const navigate = useNavigate();
@@ -26,6 +27,17 @@ const AdminDashboard = () => {
 
   const handleUserClick = (user) => {
     navigate(`user/${user._id}`);
+  };
+
+  const handleDelete = async (user) => {
+    // ALWAYS ask for confirmation for delete actions
+    const confirmDelete = window.confirm(
+      `CRITICAL ACTION: Are you sure you want to delete ${user.name}? This will remove all their job applications and data forever.`
+    );
+
+    if (confirmDelete) {
+      await deleteUserAction(user._id);
+    }
   };
 
   const filteredUsers = searchTerm === ""
@@ -155,7 +167,10 @@ const AdminDashboard = () => {
                          <button className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition" title="Promote/Demote">
                           <ShieldCheck size={20} />
                         </button>
-                        <button className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition" title="Delete Account">
+                        <button 
+                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition" title="Delete Account"
+                        onClick={() => handleDelete(user)}
+                        >
                           <Trash2 size={20} />
                         </button>
                       </div>

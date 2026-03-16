@@ -92,13 +92,30 @@ const createApplication = async (req, res) => {
   }
 };
 
+const getApplicationsByUserId = async (req, res) => {
+  try {
+    const { userId } = req.params; // Get userId from URL instead of token
+
+    // Admin Check: Ensure only admins can access this route
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    const applications = await Application.find({ createdBy: userId });
+    res.status(200).json({ applications });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 
 module.exports = {
   createApplication,
   getUserApplications,
   getSavedUserApplications,
   deleteApplication,
-  updateApplicationStatus
+  updateApplicationStatus,
+  getApplicationsByUserId
 };
 
 
