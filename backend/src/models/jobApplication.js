@@ -60,7 +60,7 @@ const jobApplicationSchema = new mongoose.Schema(
       default: ""
     },
 
-    resumeVersion: {
+    resumeUrl: {
       type: String,
       default: ""
     },

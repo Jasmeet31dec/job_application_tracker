@@ -4,15 +4,18 @@ import {
   ShieldCheck, Eye, MapPin, Building2, 
   Users, Loader2, Clock 
 } from 'lucide-react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom'; // Removed useNavigate
 import { useApp } from '../context/AppContext';
+import ApplicationDetails from './ApplicationDetails'; // 1. Import the modal component
 
 const UserDetails = () => {
   const { userId } = useParams();
   const { userApplications, fetchUserApplications, fetchUserById } = useApp();
   const [currentUser, setCurrentUser] = useState(null);
   const [isDataLoading, setIsDataLoading] = useState(true);
-  const navigate = useNavigate();
+  
+  // 2. Add state for the selected application
+  const [selectedApp, setSelectedApp] = useState(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -48,7 +51,7 @@ const UserDetails = () => {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 animate-in fade-in duration-700">
       
-      {/* 1. Header Navigation */}
+      {/* Header Navigation */}
       <div className="mb-10">
         <Link
           to="/dashboard"
@@ -59,16 +62,13 @@ const UserDetails = () => {
         </Link>
       </div>
 
-      {/* 2. Main Profile Hero Card */}
+      {/* Main Profile Hero Card */}
       <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-2xl shadow-slate-200/60 overflow-hidden relative mb-12">
-        {/* Subtle Background Pattern */}
         <div className="absolute top-0 right-0 p-12 opacity-[0.04] text-indigo-600 pointer-events-none">
           <Users size={160} />
         </div>
 
         <div className="p-8 md:p-12 flex flex-col lg:flex-row lg:items-center justify-between gap-10 relative z-10">
-          
-          {/* Identity Section */}
           <div className="flex items-center gap-8">
             <div className="h-24 w-24 flex-shrink-0 bg-gradient-to-br from-indigo-600 to-violet-700 text-white rounded-3xl flex items-center justify-center text-4xl font-black shadow-xl shadow-indigo-100 ring-8 ring-indigo-50">
               {currentUser.name?.charAt(0)}
@@ -94,7 +94,6 @@ const UserDetails = () => {
             </div>
           </div>
 
-          {/* Key Metrics Column */}
           <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
             <div className="bg-slate-50 border border-slate-100 px-8 py-6 rounded-3xl text-center flex-1 lg:min-w-[160px]">
               <p className="text-[10px] text-slate-400 uppercase font-black tracking-[0.2em] mb-2">Total Applications</p>
@@ -111,7 +110,7 @@ const UserDetails = () => {
         </div>
       </div>
 
-      {/* 3. Section Title */}
+      {/* Section Title */}
       <div className="flex items-end justify-between mb-8 pb-4 border-b border-slate-200">
         <div>
           <h3 className="text-2xl font-black text-slate-900 flex items-center gap-3">
@@ -126,7 +125,7 @@ const UserDetails = () => {
         </div>
       </div>
 
-      {/* 4. Application Cards Grid */}
+      {/* Application Cards Grid */}
       <div className="grid grid-cols-1 gap-6">
         {userApplications?.length > 0 ? (
           userApplications.map((app) => (
@@ -137,11 +136,12 @@ const UserDetails = () => {
                   <Building2 size={28} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
                 </div>
                 <div>
+                  {/* Note: Matching field names to ApplicationDetails expectations */}
                   <h4 className="text-xl font-bold text-slate-900 mb-1 group-hover:text-indigo-600 transition-colors">
-                    {app.jobTitle}
+                    {app.position || app.jobTitle}
                   </h4>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                    <span className="text-slate-500 font-bold text-sm">{app.companyName}</span>
+                    <span className="text-slate-500 font-bold text-sm">{app.company || app.companyName}</span>
                     <span className="text-slate-300">•</span>
                     <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400">
                       <Clock size={14} /> 
@@ -153,15 +153,17 @@ const UserDetails = () => {
 
               <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-4 md:pt-0">
                 <div className={`px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border ${
-                  app.status === 'Accepted' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                  app.status === 'Offer' || app.status === 'Accepted' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
                   app.status === 'Rejected' ? 'bg-rose-50 text-rose-600 border-rose-100' :
                   'bg-amber-50 text-amber-600 border-amber-100'
                 }`}>
                   {app.status || 'Under Review'}
                 </div>
+                
+                {/* 3. Button now sets state instead of navigating */}
                 <button 
-                className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.1em] hover:bg-indigo-600 transition-all shadow-md active:scale-95"
-                onClick={() => navigate(`/admin/applications/${app._id}`)}
+                  className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.1em] hover:bg-indigo-600 transition-all shadow-md active:scale-95"
+                  onClick={() => setSelectedApp(app)}
                 >
                   <Eye size={16} /> View Details
                 </button>
@@ -178,6 +180,19 @@ const UserDetails = () => {
           </div>
         )}
       </div>
+
+      {/* 4. Render the Details Modal when an application is selected */}
+      {selectedApp && (
+        <ApplicationDetails 
+          application={{
+            ...selectedApp,
+            // Ensure consistency between Admin field names and User field names
+            company: selectedApp.company || selectedApp.companyName,
+            position: selectedApp.position || selectedApp.jobTitle
+          }} 
+          onClose={() => setSelectedApp(null)} 
+        />
+      )}
     </div>
   );
 };

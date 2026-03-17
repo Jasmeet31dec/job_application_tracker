@@ -1,11 +1,12 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react'; // Added useState
 import {
     Building2, MapPin, Briefcase, ExternalLink,
-    Plus, Loader2, ClipboardList, Ghost, Trash2,
+    Plus, Loader2, ClipboardList, Trash2,
     Calendar
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import ApplicationDetails from './ApplicationDetails'; // 1. Import the Detail component
 
 const MyApplications = () => {
     const { 
@@ -15,6 +16,9 @@ const MyApplications = () => {
         updateApplicationStatus, 
         deleteApplication 
     } = useApp();
+
+    // 2. Add state for the modal
+    const [selectedApp, setSelectedApp] = useState(null);
 
     const columns = [
         { id: 'Applied', title: 'Applied', color: 'bg-blue-500' },
@@ -28,27 +32,10 @@ const MyApplications = () => {
         fetchMyApplications();
     }, [fetchMyApplications]);
 
-    /**
-     * FIX PART 1: Optimization
-     * Instead of filtering inside the JSX for every column on every render,
-     * we group applications once using useMemo. This ensures React re-renders
-     * cleanly the moment the context state changes.
-     */
     const groupedApps = useMemo(() => {
-        const groups = {
-            Applied: [],
-            Interviewing: [],
-            Offer: [],
-            Rejected: [],
-            Ghosted: []
-        };
-        
+        const groups = { Applied: [], Interviewing: [], Offer: [], Rejected: [], Ghosted: [] };
         applications.forEach(app => {
-            // Normalize status to match column IDs
-            const status = app.status;
-            if (groups[status]) {
-                groups[status].push(app);
-            }
+            if (groups[app.status]) groups[app.status].push(app);
         });
         return groups;
     }, [applications]);
@@ -57,23 +44,17 @@ const MyApplications = () => {
         e.dataTransfer.setData("applicationId", id);
     };
 
-    const onDragOver = (e) => {
-        e.preventDefault(); 
-    };
+    const onDragOver = (e) => e.preventDefault(); 
 
     const handleDrop = (e, newStatus) => {
         const id = e.dataTransfer.getData("applicationId");
         if (!id) return;
-        
-        /**
-         * FIX PART 2: Non-blocking call
-         * We don't 'await' here for the UI to update. The updateApplicationStatus 
-         * function in AppContext should update the local state immediately.
-         */
         updateApplicationStatus(id, newStatus);
     };
 
-    const handleDelete = async (id) => {
+    // 3. Stop propagation prevents the Modal from opening when you just want to delete
+    const handleDelete = async (e, id) => {
+        e.stopPropagation(); 
         if (!window.confirm("Are you sure you want to delete this application?")) return;
         await deleteApplication(id);
     };
@@ -88,7 +69,8 @@ const MyApplications = () => {
     }
 
     return (
-        <div className="p-6 bg-slate-50 min-h-screen">
+        <div className="p-6 bg-slate-50 min-h-screen relative">
+            {/* Header */}
             <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
                 <div>
                     <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Trackly <span className="text-indigo-600">Board</span></h1>
@@ -99,6 +81,7 @@ const MyApplications = () => {
                 </Link>
             </div>
 
+            {/* Kanban Board */}
             <div className="max-w-[1600px] mx-auto overflow-x-auto pb-8">
                 <div className="flex gap-6 min-w-[1400px]">
                     {columns.map((col) => (
@@ -124,20 +107,30 @@ const MyApplications = () => {
                                         key={app._id}
                                         draggable
                                         onDragStart={(e) => handleDragStart(e, app._id)}
+                                        // 4. Trigger Modal on click
+                                        onClick={() => setSelectedApp(app)}
                                         className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-indigo-400 transition-all duration-300 group cursor-grab active:cursor-grabbing"
                                     >
-                                        {/* ... Rest of your card UI is exactly the same ... */}
                                         <div className="flex justify-between items-start mb-1">
                                             <h3 className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors leading-snug">
                                                 {app.position}
                                             </h3>
                                             <div className="flex items-center gap-2">
                                                 {app.applicationLink && (
-                                                    <a href={app.applicationLink} target="_blank" rel="noreferrer" className="text-slate-300 hover:text-indigo-600 transition">
+                                                    <a 
+                                                        href={app.applicationLink} 
+                                                        target="_blank" 
+                                                        rel="noreferrer" 
+                                                        onClick={(e) => e.stopPropagation()} // 5. Don't open modal when clicking link
+                                                        className="text-slate-300 hover:text-indigo-600 transition"
+                                                    >
                                                         <ExternalLink size={14} />
                                                     </a>
                                                 )}
-                                                <button onClick={() => handleDelete(app._id)} className="text-slate-300 hover:text-rose-500 transition opacity-0 group-hover:opacity-100">
+                                                <button 
+                                                    onClick={(e) => handleDelete(e, app._id)} 
+                                                    className="text-slate-300 hover:text-rose-500 transition opacity-0 group-hover:opacity-100"
+                                                >
                                                     <Trash2 size={14} />
                                                 </button>
                                             </div>
@@ -176,6 +169,14 @@ const MyApplications = () => {
                     ))}
                 </div>
             </div>
+
+            {/* 6. Render the Application Details Modal */}
+            {selectedApp && (
+                <ApplicationDetails 
+                    application={selectedApp} 
+                    onClose={() => setSelectedApp(null)} 
+                />
+            )}
         </div>
     );
 };

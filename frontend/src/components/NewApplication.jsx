@@ -2,27 +2,29 @@ import React, { useState } from 'react';
 import {
     Building2, Briefcase, MapPin, Globe,
     Link as LinkIcon, FileText, Send, X,
-    PlusCircle, CheckCircle2
+    PlusCircle, CheckCircle2, Upload
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const NewApplication = ({ onClose }) => {
     const token = localStorage.getItem("token");
     const navigate = useNavigate();
+
     const [formData, setFormData] = useState({
         company: '',
         position: '',
         jobLocation: '',
-        jobType: 'Full-time', 
+        jobType: 'Full-time',
         status: 'Applied',
         source: '',
         applicationLink: '',
-        notes: ''
+        notes: '',
     });
 
+    // New state for the file
+    const [resume, setResume] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    //job types list
     const jobTypes = ["Full-time", "Part-time", "Internship", "Contract", "Remote"];
 
     const handleChange = (e) => {
@@ -34,24 +36,38 @@ const NewApplication = ({ onClose }) => {
         e.preventDefault();
         setIsSubmitting(true);
 
+        // Switch to FormData for file upload support
+        const submissionData = new FormData();
+        
+        // Append all text fields
+        Object.entries(formData).forEach(([key, value]) => {
+            submissionData.append(key, value);
+        });
+
+        // Append the file if it exists
+        if (resume) {
+            submissionData.append('resume', resume);
+        }
+
         try {
             const response = await fetch('http://localhost:5000/api/applications/create', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`
-                    , 'Content-Type': 'application/json'
+                    'Authorization': `Bearer ${token}`,
+                    // Note: DON'T set 'Content-Type': 'multipart/form-data' manually. 
+                    // Let the browser set it with the correct boundary.
                 },
-                body: JSON.stringify(formData),
+                body: submissionData,
             });
 
             if (response.ok) {
                 if (onClose) onClose();
+                navigate("/applications");
             }
         } catch (error) {
             console.error('Error adding application:', error);
         } finally {
             setIsSubmitting(false);
-            navigate("/applications");
         }
     };
 
@@ -101,6 +117,7 @@ const NewApplication = ({ onClose }) => {
                     </div>
                 </div>
 
+                {/* Location and Job Type */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
@@ -131,6 +148,7 @@ const NewApplication = ({ onClose }) => {
                     </div>
                 </div>
 
+                {/* Status and Source */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
@@ -161,6 +179,7 @@ const NewApplication = ({ onClose }) => {
                     </div>
                 </div>
 
+                {/* URL */}
                 <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                         <LinkIcon size={12} /> URL
@@ -175,6 +194,22 @@ const NewApplication = ({ onClose }) => {
                     />
                 </div>
 
+                {/* Resume Upload - Styled to match your theme */}
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                        <Upload size={12} /> Resume (PDF Optional)
+                    </label>
+                    <div className="relative border-2 border-dashed border-slate-200 rounded-xl p-4 hover:border-indigo-400 transition-colors bg-slate-50">
+                        <input
+                            type="file"
+                            accept=".pdf"
+                            onChange={(e) => setResume(e.target.files[0])}
+                            className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 cursor-pointer"
+                        />
+                    </div>
+                </div>
+
+                {/* Notes */}
                 <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                         <FileText size={12} /> Notes

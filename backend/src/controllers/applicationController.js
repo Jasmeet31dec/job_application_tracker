@@ -67,7 +67,7 @@ const getSavedUserApplications = async (req, res) => {
   }
 };
 
-
+/*
 const createApplication = async (req, res) => {
   try {
     const userId = req.user.id;        // from JWT
@@ -82,6 +82,38 @@ const createApplication = async (req, res) => {
     const newApplication = await applicationService.createApplication(applicationData);
     
     res.status(201).json({
+      message: "Application created successfully",
+      data: newApplication
+    });
+
+  } catch (error) {
+    console.error("Error creating application:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+*/
+
+const createApplication = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const userEmail = req.user.email;
+
+    const applicationData = {
+      ...req.body,
+      user: userId,
+      userEmail: userEmail
+    };
+
+    // ONLY add resumeUrl if a file was actually uploaded
+    if (req.file) {
+      applicationData.resumeUrl = `/uploads/resumes/${req.file.filename}`;
+    }
+
+    // Call your existing service logic
+    const newApplication = await applicationService.createApplication(applicationData);
+    
+    res.status(201).json({
+      success: true,
       message: "Application created successfully",
       data: newApplication
     });
