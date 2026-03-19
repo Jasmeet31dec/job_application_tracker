@@ -1,6 +1,9 @@
+ 
 const mongoose = require("mongoose");
 
-mongoose.connect("mongodb://localhost:27017/jwt_db");
+/* 2. Use process.env.MONGODB_URI instead of the hardcoded string */
+const mongoURI = process.env.MONGODB_URI || "mongodb://localhost:27017/jwt_db";
+mongoose.connect(mongoURI);
 
 mongoose.connection.on("connected", () => {
     console.log("Connected to MongoDB");

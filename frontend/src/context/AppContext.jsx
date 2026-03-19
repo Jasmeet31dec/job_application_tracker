@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { dummyJobs } from '../data/dummyJobs';
+
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
@@ -13,20 +14,36 @@ export const AppProvider = ({ children }) => {
   const [userApplications, setUserApplications] = useState([]);
 
   const API_BASE_URL = "http://localhost:5000/api";
-  const token = localStorage.getItem("token");
-  
-  // 1. Memoized API Helper
+
+  // 1. UPDATED: Memoized API Helper
   const apiRequest = useCallback(async (endpoint, options = {}) => {
     setLoading(true);
+    
+    // FETCH THE TOKEN FRESH ON EVERY REQUEST
+    const currentToken = localStorage.getItem("token");
+
+    const headers = {
+      'Authorization': `Bearer ${currentToken}`,
+      ...options.headers,
+    };
+
+    // IMPORTANT: Only set Content-Type to JSON if we aren't sending a File/FormData
+    if (!(options.body instanceof FormData)) {
+      headers['Content-Type'] = 'application/json';
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...options,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          ...options.headers,
-        },
+        headers,
       });
+
+      // Handle unauthorized if token expires
+      if (response.status === 401) {
+        localStorage.clear(); 
+        window.location.href = "/login";
+      }
+
       const result = await response.json();
       return result.data ? result.data : result;
     } catch (err) {
@@ -35,13 +52,13 @@ export const AppProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, []); // Removed [token] dependency
 
   // 2. Memoized Actions
   const fetchExternalJobs = useCallback(async (params = "") => {
     const data = await apiRequest(`/jobs/external?${params}`);
-    if (data){setJobs(data);}
-    else{ setJobs(dummyJobs);}
+    if (data) { setJobs(data); }
+    else { setJobs(dummyJobs); }
   }, [apiRequest]);
 
   const fetchJobDetails = useCallback(async (id) => {
@@ -71,22 +88,19 @@ export const AppProvider = ({ children }) => {
   }, [apiRequest]);
 
   const updateApplicationStatus = useCallback(async (id, newStatus) => {
-    // 1. Update UI Instantly (Optimistic)
     setApplications(prev => prev.map(app =>
       app._id === id ? { ...app, status: newStatus } : app
     ));
 
-    // 2. Perform API call in background
     try {
       await apiRequest(`/applications/my-applications/${id}/status`, {
         method: 'PATCH',
         body: JSON.stringify({ status: newStatus })
       });
     } catch (err) {
-      // Rollback on error if necessary
       fetchMyApplications();
     }
-  }, [apiRequest]);
+  }, [apiRequest, fetchMyApplications]);
 
   const deleteApplication = useCallback(async (id) => {
     const success = await apiRequest(`/applications/my-applications/${id}`, {
@@ -97,7 +111,6 @@ export const AppProvider = ({ children }) => {
     }
   }, [apiRequest]);
 
-  //fetch user details
   const fetchUserDetails = useCallback(async () => {
     const data = await apiRequest("/users", {
       method: 'GET'
@@ -111,50 +124,46 @@ export const AppProvider = ({ children }) => {
     const data = await apiRequest(`/users/${id}`, {
       method: 'GET'
     });
-    return data.user;
-    
+    // Safely access data.user
+    return data?.user || data;
   }, [apiRequest]);
 
   const fetchUserApplications = useCallback(async (userId) => {
     try {
-        const data = await apiRequest(`/admin/user-applications/${userId}`);
-        if (data) {
-            setUserApplications(data);
-        }
-    } catch (error) {
-        console.error("Error fetching user applications:", error);
-    }
-}, [apiRequest]);
-
-const deleteUserAction = async (userId) => {
-    try {
-      // 1. Call Backend
-      const data = await apiRequest(`/delete/${userId}`, {
-      method: 'DELETE'
-    });
-
-      if (data.success) {
-        // 2. Update Frontend State (Remove user from local array)
-        setUsers((prevUsers) => prevUsers.filter(user => user._id !== userId));
-        alert(data.message? data.message : "User deleted successfully");
-        return true;
+      const data = await apiRequest(`/admin/user-applications/${userId}`);
+      if (data) {
+        setUserApplications(data);
       }
     } catch (error) {
-      console.error("Delete Error:", error.response?.data?.message || error.message);
-      alert(error.response?.data?.message || "Failed to delete user");
+      console.error("Error fetching user applications:", error);
+    }
+  }, [apiRequest]);
+
+  const deleteUserAction = useCallback(async (userId) => {
+    try {
+      const data = await apiRequest(`/delete/${userId}`, {
+        method: 'DELETE'
+      });
+
+      if (data && data.success) {
+        setUsers((prevUsers) => prevUsers.filter(user => user._id !== userId));
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Delete Error:", error.message);
       return false;
     }
-  };
+  }, [apiRequest]);
 
   // 3. Memoized Context Value
-  // This ensures the object provided to the app only changes when data actually changes
   const value = useMemo(() => ({
     jobs,
     users,
     applications,
     loading,
     error,
-    selectedUser, 
+    selectedUser,
     setSelectedUser,
     userApplications,
     fetchUserApplications,
@@ -167,12 +176,11 @@ const deleteUserAction = async (userId) => {
     fetchUserDetails,
     fetchUserById,
     deleteUserAction
-    
   }), [
-    jobs, users, applications, loading, error,
-    fetchExternalJobs, fetchJobDetails, trackApplication,
-    fetchMyApplications, updateApplicationStatus, deleteApplication, fetchUserDetails,fetchUserById,
-    deleteUserAction
+    jobs, users, applications, loading, error, selectedUser, userApplications,
+    fetchUserApplications, fetchExternalJobs, fetchJobDetails, trackApplication,
+    fetchMyApplications, updateApplicationStatus, deleteApplication, fetchUserDetails,
+    fetchUserById, deleteUserAction
   ]);
 
   return (
