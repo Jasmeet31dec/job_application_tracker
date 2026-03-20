@@ -65,16 +65,17 @@ export const AppProvider = ({ children }) => {
     return await apiRequest(`/jobs/external/${id}`);
   }, [apiRequest]);
 
-  const trackApplication = useCallback(async (jobData, status) => {
+  const trackApplication = useCallback(async (jobData) => {
     const payload = {
-      position: jobData.title,
+      position: jobData.position,
       company: jobData.company,
-      jobLocation: jobData.location,
+      jobLocation: jobData.jobLocation,
       jobId: jobData.id,
-      jobType: jobData.type,
-      status: status,
-      applicationLink: jobData.applyLink,
-      notes: `${status} via Trackly on ${new Date().toLocaleDateString()}`
+      jobType: jobData.jobType,
+      status: jobData.status,
+      applicationLink: jobData.applicationLink,
+      resume:jobData.resume,
+      notes: jobData.notes || `${status} via Trackly on ${new Date().toLocaleDateString()}`
     };
     return await apiRequest("/applications/create", {
       method: 'POST',

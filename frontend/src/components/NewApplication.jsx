@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import {
-    Building2, Briefcase, MapPin, Globe,
+    Building2, Briefcase, MapPin, Search,
     Link as LinkIcon, FileText, Send, 
-    PlusCircle, CheckCircle2, Upload, ChevronLeft,
-    Clock, Info
+    CheckCircle2, Upload, ChevronLeft,
+    Clock, Info, FileCheck, Globe
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 
@@ -17,15 +17,13 @@ const NewApplication = () => {
         jobLocation: '',
         jobType: 'Full-time',
         status: 'Applied',
-        source: '',
+        source: '', 
         applicationLink: '',
         notes: '',
     });
 
     const [resume, setResume] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const jobTypes = ["Full-time", "Part-time", "Internship", "Contract", "Remote"];
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -56,144 +54,120 @@ const NewApplication = () => {
 
             if (response.ok) {
                 navigate("/applications");
+            } else {
+                const err = await response.json();
+                alert(err.message || "Failed to save application");
             }
         } catch (error) {
-            console.error('Error adding application:', error);
+            console.error('Submit error:', error);
         } finally {
             setIsSubmitting(false);
         }
     };
 
     return (
-        <div className="min-h-screen bg-slate-50/50 p-4 md:p-8">
-            <div className="max-w-4xl mx-auto">
+        <div className="min-h-screen bg-slate-50/50 p-6 md:p-12 font-sans">
+            <div className="max-w-6xl mx-auto">
                 
-                {/* 1. Integrated Header with Back Button */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-                    <div className="flex items-center gap-4">
-                        <button 
-                            onClick={() => navigate(-1)}
-                            className="p-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm text-slate-600"
-                        >
-                            <ChevronLeft size={20} />
-                        </button>
-                        <div>
-                            <nav className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
-                                <Link to="/applications" className="hover:text-indigo-600 transition">Applications</Link>
-                                <span>/</span>
-                                <span className="text-slate-900">New Entry</span>
-                            </nav>
-                            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Create <span className="text-indigo-600">Application</span></h1>
+                {/* 1. Header & Back Navigation */}
+                <div className="flex items-center gap-5 mb-10">
+                    <button 
+                        onClick={() => navigate(-1)}
+                        className="p-3.5 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all text-slate-500 hover:text-indigo-600 shadow-sm"
+                    >
+                        <ChevronLeft size={22} />
+                    </button>
+                    <div>
+                        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1">
+                            <Link to="/applications" className="hover:text-indigo-600">Trackers</Link>
+                            <span className="opacity-30">/</span>
+                            <span className="text-indigo-600 font-bold">New Entry</span>
                         </div>
+                        <h1 className="text-3xl font-black text-slate-900 tracking-tight">Create <span className="text-indigo-600">Application</span></h1>
                     </div>
                 </div>
 
-                {/* 2. Main Form Layout (Non-Floating) */}
-                <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     
-                    {/* Left Column: Essential Info */}
-                    <div className="lg:col-span-2 space-y-6">
-                        <div className="bg-white rounded-3xl border border-slate-200 p-6 md:p-8 shadow-sm">
-                            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-50">
-                                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
-                                    <Info size={18} />
-                                </div>
-                                <h3 className="font-bold text-slate-800">Position Details</h3>
+                    {/* Left Side: Detail Forms (8 Columns) */}
+                    <div className="lg:col-span-8 space-y-6">
+                        <div className="bg-white rounded-[2.5rem] border border-slate-200/60 p-8 md:p-10 shadow-sm">
+                            <div className="flex items-center gap-3 mb-8">
+                                <div className="p-2.5 bg-indigo-50 text-indigo-500 rounded-xl"><Info size={18} /></div>
+                                <h3 className="font-black text-slate-800 uppercase tracking-widest text-xs">Job Information</h3>
                             </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                                <FormInput label="Company Name" name="company" icon={<Building2 size={12}/>} value={formData.company} onChange={handleChange} placeholder="e.g. Amazon" required />
+                                <FormInput label="Role / Position" name="position" icon={<Briefcase size={12}/>} value={formData.position} onChange={handleChange} placeholder="e.g. Backend Dev" required />
+                                <FormInput label="Job Location" name="jobLocation" icon={<MapPin size={12}/>} value={formData.jobLocation} onChange={handleChange} placeholder="e.g. Remote" />
+                                
+                                {/* ✅ APPLICATION SOURCE IS A TEXT INPUT */}
+                                <FormInput 
+                                    label="Application Source" 
+                                    name="source" 
+                                    icon={<Globe size={12}/>} 
+                                    value={formData.source} 
+                                    onChange={handleChange} 
+                                    placeholder="e.g. LinkedIn" 
+                                    required 
+                                />
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <FormInput 
-                                    label="Company Name" 
-                                    icon={<Building2 size={14}/>}
-                                    name="company"
-                                    value={formData.company}
-                                    onChange={handleChange}
-                                    placeholder="e.g. Google"
-                                    required
-                                />
-                                <FormInput 
-                                    label="Role / Position" 
-                                    icon={<Briefcase size={14}/>}
-                                    name="position"
-                                    value={formData.position}
-                                    onChange={handleChange}
-                                    placeholder="e.g. Frontend Developer"
-                                    required
-                                />
-                                <FormInput 
-                                    label="Job Location" 
-                                    icon={<MapPin size={14}/>}
-                                    name="jobLocation"
-                                    value={formData.jobLocation}
-                                    onChange={handleChange}
-                                    placeholder="e.g. Remote / London"
-                                />
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                        <Clock size={12} /> Job Type
+                                <div className="md:col-span-2 space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                                        <Clock size={12} /> Employment Type
                                     </label>
-                                    <select
-                                        name="jobType"
-                                        value={formData.jobType}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white focus:ring-4 focus:ring-indigo-500/10 outline-none transition font-medium text-slate-900 appearance-none cursor-pointer"
-                                    >
-                                        {jobTypes.map(type => (
-                                            <option key={type} value={type}>{type}</option>
+                                    <div className="flex flex-wrap gap-2">
+                                        {["Full-time", "Part-time", "Internship", "Contract"].map(type => (
+                                            <button
+                                                key={type}
+                                                type="button"
+                                                onClick={() => setFormData(prev => ({...prev, jobType: type}))}
+                                                className={`px-6 py-3 rounded-2xl text-xs font-bold transition-all border ${
+                                                    formData.jobType === type 
+                                                    ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-100' 
+                                                    : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-200'
+                                                }`}
+                                            >
+                                                {type}
+                                            </button>
                                         ))}
-                                    </select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-3xl border border-slate-200 p-6 md:p-8 shadow-sm">
-                            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-50">
-                                <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
-                                    <FileText size={18} />
-                                </div>
-                                <h3 className="font-bold text-slate-800">Additional Information</h3>
+                        <div className="bg-white rounded-[2.5rem] border border-slate-200/60 p-8 md:p-10 shadow-sm">
+                            <div className="flex items-center gap-3 mb-8">
+                                <div className="p-2.5 bg-amber-50 text-amber-500 rounded-xl"><LinkIcon size={18} /></div>
+                                <h3 className="font-black text-slate-800 uppercase tracking-widest text-xs">Links & Notes</h3>
                             </div>
                             <div className="space-y-6">
-                                <FormInput 
-                                    label="Application Link" 
-                                    icon={<LinkIcon size={14}/>}
-                                    name="applicationLink"
-                                    value={formData.applicationLink}
-                                    onChange={handleChange}
-                                    placeholder="https://..."
-                                    type="url"
-                                />
+                                <FormInput label="Job Post URL" name="applicationLink" icon={<Search size={12}/>} value={formData.applicationLink} onChange={handleChange} placeholder="https://..." />
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                        <FileText size={12} /> Notes
-                                    </label>
-                                    <textarea
-                                        name="notes"
-                                        value={formData.notes}
-                                        onChange={handleChange}
-                                        rows="4"
-                                        placeholder="Add key highlights or requirements..."
-                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-500/10 outline-none transition font-medium text-slate-900 resize-none"
-                                    />
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Personal Notes</label>
+                                    <textarea name="notes" value={formData.notes} onChange={handleChange} rows="4" className="w-full px-6 py-4 rounded-[1.5rem] border border-slate-100 bg-slate-50/30 outline-none focus:ring-4 focus:ring-indigo-500/5 transition resize-none placeholder:text-slate-300" placeholder="Specific requirements or referral details..." />
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Right Column: Status & Upload */}
-                    <div className="space-y-6">
-                        <div className="bg-slate-900 rounded-3xl p-6 text-white shadow-lg shadow-slate-200">
-                            <h3 className="text-xs font-black uppercase tracking-[0.2em] mb-6 text-slate-400">Tracking Status</h3>
-                            <div className="space-y-4">
+                    {/* Right Side: Status & Resume Upload (4 Columns) */}
+                    <div className="lg:col-span-4 space-y-6">
+                        
+                        {/* Status Pickers */}
+                        <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-xl shadow-slate-200">
+                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] mb-8 text-slate-500 text-center">Current Phase</h3>
+                            <div className="space-y-3">
                                 {["Applied", "Interviewing", "Offer", "Rejected", "Ghosted"].map((s) => (
                                     <button
                                         key={s}
                                         type="button"
                                         onClick={() => setFormData(prev => ({...prev, status: s}))}
-                                        className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all ${
+                                        className={`w-full flex items-center justify-between p-4 px-6 rounded-2xl border transition-all ${
                                             formData.status === s 
-                                            ? 'bg-indigo-600 border-indigo-400 shadow-lg shadow-indigo-900/50' 
-                                            : 'bg-slate-800/50 border-slate-700/50 hover:bg-slate-800'
+                                            ? 'bg-indigo-600 border-indigo-400 shadow-lg' 
+                                            : 'bg-white/5 border-white/5 hover:bg-white/10'
                                         }`}
                                     >
                                         <span className="text-sm font-bold">{s}</span>
@@ -203,30 +177,26 @@ const NewApplication = () => {
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] mb-4 text-slate-400">File Assets</h3>
-                            <label className="group flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 rounded-2xl hover:border-indigo-400 hover:bg-indigo-50/30 transition-all cursor-pointer">
-                                <div className="p-3 bg-slate-50 group-hover:bg-white rounded-xl mb-3 transition-colors">
-                                    <Upload size={20} className="text-slate-400 group-hover:text-indigo-600" />
+                        {/* ✅ RESUME UPLOAD NOW LOCATED ON THE RIGHT BELOW STATUS */}
+                        <div className="bg-white rounded-[2.5rem] border border-slate-200/60 p-8 shadow-sm">
+                            <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-5 text-center px-1">Attachments</h3>
+                            <label className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-100 rounded-[2rem] hover:border-indigo-300 hover:bg-indigo-50/30 transition-all cursor-pointer group text-center">
+                                <div className="p-4 bg-slate-50 group-hover:bg-white rounded-[1.25rem] mb-4 transition-all">
+                                    {resume ? <FileCheck className="text-green-600" size={24} /> : <Upload className="text-slate-300 group-hover:text-indigo-500" size={24} />}
                                 </div>
-                                <span className="text-xs font-bold text-slate-600 group-hover:text-indigo-600 text-center">
+                                <span className="text-xs font-bold text-slate-600 max-w-[120px] truncate">
                                     {resume ? resume.name : "Upload Resume (PDF)"}
                                 </span>
-                                <input
-                                    type="file"
-                                    accept=".pdf"
-                                    onChange={(e) => setResume(e.target.files[0])}
-                                    className="hidden"
-                                />
+                                <input type="file" accept=".pdf" onChange={(e) => setResume(e.target.files[0])} className="hidden" />
                             </label>
                         </div>
 
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[11px] hover:bg-indigo-700 transition shadow-xl shadow-indigo-200 flex items-center justify-center gap-3 disabled:opacity-50 active:scale-[0.98]"
+                            className="w-full bg-indigo-600 text-white py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs hover:bg-indigo-700 transition shadow-xl shadow-indigo-100 flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
                         >
-                            {isSubmitting ? 'Syncing...' : <><Send size={16} /> Save Application</>}
+                            {isSubmitting ? 'Syncing...' : <><Send size={18} /> Save Tracker</>}
                         </button>
                     </div>
                 </form>
@@ -235,16 +205,13 @@ const NewApplication = () => {
     );
 };
 
-// Helper component for cleaner code
+// Helper Input Component
 const FormInput = ({ label, icon, ...props }) => (
     <div className="space-y-2">
-        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
             {icon} {label}
         </label>
-        <input
-            {...props}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition font-medium text-slate-900"
-        />
+        <input {...props} className="w-full px-6 py-4 rounded-[1.25rem] border border-slate-200 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition font-medium text-slate-700 bg-white placeholder:text-slate-300" />
     </div>
 );
 
