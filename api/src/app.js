@@ -25,7 +25,7 @@ app.use(bodyParser.json());
 const corsOptions = {
     origin: [
         'http://localhost:5173', //local dev URL
-        'https://job-application-tracker-1-6obk.onrender.com' // DEPLOYED FRONTEND URL
+        'https://job-application-tracker-1-x4mj.onrender.com' // DEPLOYED FRONTEND URL
     ],
     credentials: true,
 };
