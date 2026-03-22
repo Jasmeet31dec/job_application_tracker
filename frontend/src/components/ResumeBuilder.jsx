@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../config';
 import React, { useState } from 'react';
 import { 
   User, Briefcase, GraduationCap, Wrench, 
@@ -45,7 +46,7 @@ const ResumeBuilder = () => {
         skills: formData.skills.split(',').map(s => s.trim()).filter(s => s !== "")
       };
       
-      const response = await axios.post('http://localhost:5000/api/resume/build', payload, { 
+      const response = await axios.post(`${API_BASE_URL}/api/resume/build`, payload, { 
         responseType: 'blob' 
       });
       

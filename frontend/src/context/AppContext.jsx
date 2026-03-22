@@ -1,3 +1,4 @@
+import { API_BASE_URL, API_BASE_URL } from '../config';
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { dummyJobs } from '../data/dummyJobs';
 
@@ -13,7 +14,7 @@ export const AppProvider = ({ children }) => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [userApplications, setUserApplications] = useState([]);
 
-  const API_BASE_URL = "http://localhost:5000/api";
+  const API_BASE_URL = `${API_BASE_URL}/api`;
 
   // 1. UPDATED: Memoized API Helper
   const apiRequest = useCallback(async (endpoint, options = {}) => {

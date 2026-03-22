@@ -1,4 +1,4 @@
-import React from 'react';
+import { API_BASE_URL } from '../config';
 import {
     Building2, Briefcase, MapPin, Globe,
     Link as LinkIcon, FileText, X,
@@ -22,7 +22,7 @@ const ApplicationDetails = ({ application, onClose }) => {
 
     const handleViewResume = () => {
         // Construct full URL (Change localhost:5000 to your production URL if needed)
-        const fullUrl = `http://localhost:5000${application.resumeUrl}`;
+        const fullUrl = `${API_BASE_URL}${application.resumeUrl}`;
         window.open(fullUrl, '_blank');
     };
 
