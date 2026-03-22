@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '../config';
+import { API_BASE_URL } from '../../../config';
 import React, { useState } from 'react';
 import { Mail, Lock, User, Eye, EyeOff, Briefcase, Github } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';

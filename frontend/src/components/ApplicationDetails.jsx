@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '../config';
+import { API_BASE_URL } from '../config.js';
 import {
     Building2, Briefcase, MapPin, Globe,
     Link as LinkIcon, FileText, X,
