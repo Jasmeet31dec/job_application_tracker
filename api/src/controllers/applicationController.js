@@ -68,6 +68,7 @@ const getSavedUserApplications = async (req, res) => {
 };
 
 /*
+//without feat resume upload
 const createApplication = async (req, res) => {
   try {
     const userId = req.user.id;        // from JWT
@@ -92,8 +93,8 @@ const createApplication = async (req, res) => {
   }
 };
 */
-
-const createApplication = async (req, res) => {
+//with feat resume upload to folder uploads in backened 
+/*const createApplication = async (req, res) => {
   try {
     const userId = req.user.id;
     const userEmail = req.user.email;
@@ -107,6 +108,39 @@ const createApplication = async (req, res) => {
     // ONLY add resumeUrl if a file was actually uploaded
     if (req.file) {
       applicationData.resumeUrl = `/uploads/resumes/${req.file.filename}`;
+    }
+
+    // Call your existing service logic
+    const newApplication = await applicationService.createApplication(applicationData);
+    
+    res.status(201).json({
+      success: true,
+      message: "Application created successfully",
+      data: newApplication
+    });
+
+  } catch (error) {
+    console.error("Error creating application:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+*/
+
+const createApplication = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const userEmail = req.user.email;
+
+    const applicationData = {
+      ...req.body,
+      user: userId,
+      userEmail: userEmail
+    };
+
+    // CHANGE: Use req.file.path instead of building a local string
+    // req.file.path now contains the full Cloudinary URL (https://res.cloudinary.com/...)
+    if (req.file) {
+      applicationData.resumeUrl = req.file.path; 
     }
 
     // Call your existing service logic
