@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../config.js';
 import React, { useState } from 'react';
 import {
     Building2, Briefcase, MapPin, Search,
@@ -44,7 +45,7 @@ const NewApplication = () => {
         }
 
         try {
-            const response = await fetch('http://localhost:5000/api/applications/create', {
+            const response = await fetch(`${API_BASE_URL}/api/applications/create`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,

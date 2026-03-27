@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { dummyJobs } from '../data/dummyJobs';
+import { API_BASE_URL} from '../config';
 
 const AppContext = createContext();
 
@@ -13,7 +14,7 @@ export const AppProvider = ({ children }) => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [userApplications, setUserApplications] = useState([]);
 
-  const API_BASE_URL = "http://localhost:5000/api";
+    const API_BASE_URL1 = `${API_BASE_URL}/api`;
 
   // 1. UPDATED: Memoized API Helper
   const apiRequest = useCallback(async (endpoint, options = {}) => {
@@ -33,7 +34,7 @@ export const AppProvider = ({ children }) => {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL1}${endpoint}`, {
         ...options,
         headers,
       });
