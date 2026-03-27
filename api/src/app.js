@@ -21,7 +21,17 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(bodyParser.json());
-app.use(cors());
+
+const corsOptions = {
+    origin: [
+        'http://localhost:5173', //local dev URL
+        'https://job-application-tracker-1-6olr.onrender.com' // DEPLOYED FRONTEND URL
+    ],
+    credentials: true,
+};
+
+app.use(cors(corsOptions));
+
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 createAdminAccount();
