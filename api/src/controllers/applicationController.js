@@ -1,4 +1,5 @@
 const applicationService = require("../services/applicationService");
+const cloudinary = require('../configuration/cloudinary');
 
 async function updateApplicationStatus(req, res) {
   try {
