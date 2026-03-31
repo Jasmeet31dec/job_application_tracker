@@ -1,4 +1,5 @@
 const applicationService = require("../services/applicationService");
+const cloudinary = require('../configuration/cloudinary');
 
 async function updateApplicationStatus(req, res) {
   try {
@@ -19,6 +20,9 @@ async function updateApplicationStatus(req, res) {
 }
 
 
+
+//without feat resume deletion from cloudinary
+/*
 async function deleteApplication(req, res) {
   try {
     const userId = req.user.id; // from token
@@ -31,6 +35,49 @@ async function deleteApplication(req, res) {
     }
 
     res.json({ message: "Application deleted successfully", deletedApp });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+*/
+
+async function deleteApplication(req, res) {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+
+    // 1. Delete from Database first to get the app data (including resumeUrl)
+    const deletedApp = await applicationService.deleteApplication(userId, id);
+
+    if (!deletedApp) {
+      return res.status(404).json({ error: "Application not found or not authorized to delete." });
+    }
+
+    // 2. If the application has a Cloudinary resume, delete it
+    if (deletedApp.resumeUrl && deletedApp.resumeUrl.includes('cloudinary.com')) {
+      try {
+        // Extract public_id from URL
+        // URL Example: .../resumes/resume-1774859862516.pdf
+        // We need: "resumes/resume-1774859862516"
+        const urlParts = deletedApp.resumeUrl.split('/');
+        const fileNameWithExtension = urlParts[urlParts.length - 1]; // "resume-1774859862516.pdf"
+        const publicIdWithoutExtension = fileNameWithExtension.split('.')[0]; // "resume-1774859862516"
+        
+        // If you used a folder (e.g., 'resumes'), prepend it
+        const publicId = `resumes/${publicIdWithoutExtension}`;
+
+        // Delete from Cloudinary
+        // Note: For PDFs, resource_type is usually 'image' (if using auto) or 'raw'
+        await cloudinary.uploader.destroy(publicId, { resource_type: 'image' });
+        
+        console.log("Cloudinary file deleted:", publicId);
+      } catch (cloudinaryErr) {
+        console.error("Failed to delete from Cloudinary:", cloudinaryErr);
+        // We don't return error 500 here because the DB record is already gone
+      }
+    }
+
+    res.json({ message: "Application and resume deleted successfully", deletedApp });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -67,6 +114,8 @@ const getSavedUserApplications = async (req, res) => {
   }
 };
 
+
+//without feat resume upload
 /*
 const createApplication = async (req, res) => {
   try {
@@ -93,6 +142,8 @@ const createApplication = async (req, res) => {
 };
 */
 
+//with feat resume upload to folder uploads in backened 
+/*
 const createApplication = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -107,6 +158,39 @@ const createApplication = async (req, res) => {
     // ONLY add resumeUrl if a file was actually uploaded
     if (req.file) {
       applicationData.resumeUrl = `/uploads/resumes/${req.file.filename}`;
+    }
+
+    // Call your existing service logic
+    const newApplication = await applicationService.createApplication(applicationData);
+    
+    res.status(201).json({
+      success: true,
+      message: "Application created successfully",
+      data: newApplication
+    });
+
+  } catch (error) {
+    console.error("Error creating application:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+*/
+
+const createApplication = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const userEmail = req.user.email;
+
+    const applicationData = {
+      ...req.body,
+      user: userId,
+      userEmail: userEmail
+    };
+
+    // CHANGE: Use req.file.path instead of building a local string
+    // req.file.path now contains the full Cloudinary URL (https://res.cloudinary.com/...)
+    if (req.file) {
+      applicationData.resumeUrl = req.file.path; 
     }
 
     // Call your existing service logic
