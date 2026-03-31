@@ -25,7 +25,7 @@ const LandingPage = () => {
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link to='/build-resume' className="w-full sm:w-auto bg-slate-900 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-slate-800 transition flex items-center justify-center gap-2">
-            Build Resume Free <ArrowRight size={20} />
+            Build Free Resume <ArrowRight size={20} />
           </Link>
           
         </div>

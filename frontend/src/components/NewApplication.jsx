@@ -197,7 +197,7 @@ const NewApplication = () => {
                             disabled={isSubmitting}
                             className="w-full bg-indigo-600 text-white py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs hover:bg-indigo-700 transition shadow-xl shadow-indigo-100 flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
                         >
-                            {isSubmitting ? 'Syncing...' : <><Send size={18} /> Save Tracker</>}
+                            {isSubmitting ? 'Saving...' : <><Send size={18} /> Save Application</>}
                         </button>
                     </div>
                 </form>
