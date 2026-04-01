@@ -2,7 +2,7 @@ import { API_BASE_URL } from '../../../config.js';
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, Briefcase, Github } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../../../config.js';
+
 
 const Login = () => {
   const navigate = useNavigate();
