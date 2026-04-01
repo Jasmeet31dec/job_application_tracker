@@ -21,10 +21,23 @@ const ApplicationDetails = ({ application, onClose }) => {
     };
 
     const handleViewResume = () => {
-        // Construct full URL (Change localhost:5000 to your production URL if needed)
-        const fullUrl = `${API_BASE_URL}${application.resumeUrl}`;
-        window.open(fullUrl, '_blank');
-    };
+    // 1. Get the raw URL from the application object
+    const resumeUrl = application.resumeUrl;
+
+    if (!resumeUrl) {
+        alert("No resume uploaded for this application");
+        return;
+    }
+
+    // 2. Check if it's a full Cloudinary URL or an old local path
+    // If it starts with 'http', it's already a full cloud link
+    const fullUrl = resumeUrl.startsWith('http') 
+        ? resumeUrl 
+        : `${API_BASE_URL}${resumeUrl}`;
+
+    // 3. Open the correctly formatted URL
+    window.open(fullUrl, '_blank');
+};
 
     return (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">

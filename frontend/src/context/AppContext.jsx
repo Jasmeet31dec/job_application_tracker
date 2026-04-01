@@ -1,6 +1,7 @@
 import { API_BASE_URL} from '../config';
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { dummyJobs } from '../data/dummyJobs';
+import { API_BASE_URL} from '../config';
 
 const AppContext = createContext();
 
@@ -14,7 +15,7 @@ export const AppProvider = ({ children }) => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [userApplications, setUserApplications] = useState([]);
 
-  const API_BASE_URL1 = `${API_BASE_URL}/api`;
+    const API_BASE_URL1 = `${API_BASE_URL}/api`;
 
   // 1. UPDATED: Memoized API Helper
   const apiRequest = useCallback(async (endpoint, options = {}) => {
@@ -66,17 +67,16 @@ export const AppProvider = ({ children }) => {
     return await apiRequest(`/jobs/external/${id}`);
   }, [apiRequest]);
 
-  const trackApplication = useCallback(async (jobData) => {
+  const trackApplication = useCallback(async (jobData, status) => {
     const payload = {
-      position: jobData.position,
+      position: jobData.title,
       company: jobData.company,
-      jobLocation: jobData.jobLocation,
+      jobLocation: jobData.location,
       jobId: jobData.id,
-      jobType: jobData.jobType,
-      status: jobData.status,
-      applicationLink: jobData.applicationLink,
-      resume:jobData.resume,
-      notes: jobData.notes || `${status} via Trackly on ${new Date().toLocaleDateString()}`
+      jobType: jobData.type,
+      status: status,
+      applicationLink: jobData.applyLink,
+      notes: `${status} via Trackly on ${new Date().toLocaleDateString()}`
     };
     return await apiRequest("/applications/create", {
       method: 'POST',
