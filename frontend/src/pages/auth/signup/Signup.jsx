@@ -27,6 +27,7 @@ const Signup = () => {
       })
       const result = await response.json();
       navigate("/login");
+      return result;
     } catch (error) {
       console.error(error.message);
     } finally {
