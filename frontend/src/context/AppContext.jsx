@@ -1,7 +1,7 @@
 import { API_BASE_URL} from '../config';
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { dummyJobs } from '../data/dummyJobs';
-import { API_BASE_URL} from '../config';
+
 
 const AppContext = createContext();
 
