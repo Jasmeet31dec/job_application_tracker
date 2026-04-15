@@ -7,6 +7,7 @@ import {
 import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import ApplicationDetails from './ApplicationDetails'; // 1. Import the Detail component
+import toast from 'react-hot-toast';
 
 const MyApplications = () => {
     const { 
@@ -56,7 +57,12 @@ const MyApplications = () => {
     const handleDelete = async (e, id) => {
         e.stopPropagation(); 
         if (!window.confirm("Are you sure you want to delete this application?")) return;
-        await deleteApplication(id);
+        try{
+            await deleteApplication(id);
+            toast.success("Application removed successfully");
+        }catch(error){
+            toast.error("Failed to remove application");
+        }
     };
 
     if (loading && applications.length === 0) {

@@ -1,3 +1,4 @@
+import { Toaster } from "react-hot-toast";
 import { createBrowserRouter, RouterProvider, Outlet, ScrollRestoration } from "react-router-dom";
 import { AppProvider } from "./context/AppContext.jsx";
 
@@ -87,6 +88,7 @@ const router = createBrowserRouter([
 export default function App() {
   return (
     <AppProvider>
+      <Toaster position="top-center" reverseOrder={false} />
       <RouterProvider router={router} />
     </AppProvider>
   );

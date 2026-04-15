@@ -2,9 +2,11 @@ import { API_BASE_URL } from '../../../config';
 import React, { useState } from 'react';
 import { Mail, Lock, User, Eye, EyeOff, Briefcase, Github } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const Signup = () => {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: '', email: '',
@@ -17,25 +19,49 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const loadingToast = toast.loading('Saving application...');
+
+    setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/user/signup`,{
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json",
+      const response = await fetch(`${API_BASE_URL}/user/signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        body:JSON.stringify(formData)
+        body: JSON.stringify(formData)
       })
       const result = await response.json();
-      navigate("/login");
-      return result;
-    } catch (error) {
-      console.error(error.message);
-    } finally {
+
+      if (!response.ok) {
+        // If not okay, throw the message from the backend (e.g., "Email already exists")
+        throw new Error(result.message || "Signup failed");
+      }
+
+      toast.success('Application added successfully!', { id: loadingToast });
+
+      //resetting form fields
       setFormData({
         name: '',
         email: '',
         password: '',
       })
+
+      navigate("/login");
+      return result;
+    } catch (error) {
+      const errorMessage = error.message || "Something went wrong";
+
+      toast.error(errorMessage, { id: loadingToast });
+      if (error.response?.status === 400) {
+
+        alert("This email is already registered. Please login.");
+      }
+      console.error(error.message);
+
+    } finally {
+      setIsLoading(false);
+      
     }
   };
 
@@ -106,9 +132,10 @@ const Signup = () => {
 
           <button
             type="submit"
+            disabled={isLoading}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition duration-200 shadow-lg shadow-blue-100"
           >
-            Create Account          </button>
+            {isLoading ? "Signing up..." : "Sign Up"} </button>
         </form>
 
         <p className="text-center text-sm text-slate-600 mt-8">
