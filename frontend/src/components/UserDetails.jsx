@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom'; // Removed useNavigate
 import { useApp } from '../context/AppContext';
-import ApplicationDetails from './ApplicationDetails'; // 1. Import the modal component
+import ApplicationDetails from './application/ApplicationDetails'; // 1. Import the modal component
 
 const UserDetails = () => {
   const { userId } = useParams();

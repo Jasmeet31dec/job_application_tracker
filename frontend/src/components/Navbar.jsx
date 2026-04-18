@@ -20,8 +20,7 @@ const Navbar = () => {
     }
 
     {decoded?.role === 'admin'? navLinks = [
-      { name: 'Dashboard', href: '/dashboard' },
-      { name: 'Job Board', href: '/jobs' },
+      { name: 'Dashboard', href: '/dashboard' }
     ]:navLinks = [
       { name: 'Dashboard', href: '/dashboard' },
       { name: 'Applications', href: '/applications' },

@@ -4,7 +4,7 @@ import {
   ChevronLeft, Search 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext'; // Import your custom hook
+import { useApp } from '../../context/AppContext'; // Import your custom hook
 import toast from 'react-hot-toast';
 
 const SavedJobs = () => {

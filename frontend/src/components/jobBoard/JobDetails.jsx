@@ -5,7 +5,7 @@ import {
     DollarSign, ExternalLink, Bookmark, Building2,
     CheckCircle2 
 } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../../context/AppContext';
 import toast from 'react-hot-toast';
 
 const JobDetails = () => {

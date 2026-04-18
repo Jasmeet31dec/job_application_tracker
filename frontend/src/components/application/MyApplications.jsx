@@ -5,7 +5,7 @@ import {
     Calendar
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../../context/AppContext';
 import ApplicationDetails from './ApplicationDetails'; // 1. Import the Detail component
 import toast from 'react-hot-toast';
 

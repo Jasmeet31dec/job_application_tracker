@@ -4,7 +4,7 @@ import {
   ArrowRight, Filter, RotateCcw, Bookmark
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext'; // Import your custom hook
+import { useApp } from '../../context/AppContext'; // Import your custom hook
 
 const JobBoard = () => {
   const navigate = useNavigate();
