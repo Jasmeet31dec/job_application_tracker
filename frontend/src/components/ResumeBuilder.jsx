@@ -1,7 +1,7 @@
 import { API_BASE_URL } from '../config';
 import React, { useState } from 'react';
 import { 
-  User, Briefcase, GraduationCap, Wrench, 
+  User, Briefcase, GraduationCap, Wrench, ChevronLeft,
   Download, Plus, Trash2, Eye, Layout, Loader2 
 } from 'lucide-react';
 import axios from 'axios';
@@ -65,6 +65,17 @@ const ResumeBuilder = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row">
+      {/* BACK TO HOME */}
+      <div className="mb-10">
+        <Link
+          to="/"
+          className="group inline-flex items-center gap-2 text-slate-500 hover:text-indigo-600 transition-colors font-bold text-sm bg-white px-5 py-2.5 rounded-xl border border-slate-200 shadow-sm"
+        >
+          <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+          Back to Home
+        </Link>
+      </div>
+
       {/* LEFT: INPUTS */}
       <div className="w-full lg:w-1/2 p-6 lg:p-10 lg:overflow-y-auto lg:h-screen border-r border-slate-200 bg-white">
         <header className="mb-8">
