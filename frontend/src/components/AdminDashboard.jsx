@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import UserDetails from '../components/UserDetails';
+import toast from 'react-hot-toast';
 
 const AdminDashboard = () => {
   const { 
@@ -31,13 +32,36 @@ const AdminDashboard = () => {
 
   const handleDelete = async (user) => {
     // ALWAYS ask for confirmation for delete actions
-    const confirmDelete = window.confirm(
-      `CRITICAL ACTION: Are you sure you want to delete ${user.name}? This will remove all their job applications and data forever.`
-    );
-
-    if (confirmDelete) {
-      await deleteUserAction(user._id);
-    }
+    toast((t) => (
+      <div className="flex flex-col gap-2 p-1">
+        <p className="font-semibold text-sm">⚠️ CRITICAL ACTION</p>
+        <p className="text-xs">Are you sure you want to delete ${user.name}? This will remove all their job applications and data forever.</p>
+        <div className="flex gap-2 mt-2">
+          
+          <button 
+            onClick={async () => {
+              const success = await deleteUserAction(user._id);
+              if (success) {
+                toast.success("User deleted successfully", { id: t.id });
+              } else {
+                toast.error("User not deleted", { id: t.id });
+              }
+            }}
+            style={{ background: '#4f46e5', color: 'white', padding: '4px 10px', borderRadius: '4px', fontSize: '12px' }}
+          >
+            Yes
+          </button>
+          
+          {/* LOGOUT OPTION */}
+          <button 
+            onClick={(t) => toast.dismiss(t.id)}
+            style={{ background: '#ef4444', color: 'white', padding: '4px 10px', borderRadius: '4px', fontSize: '12px' }}
+          >
+            No
+          </button>
+        </div>
+      </div>
+    ), { duration: Infinity, id: 'session-chance' });
   };
 
   const filteredUsers = searchTerm === ""
@@ -102,9 +126,7 @@ const AdminDashboard = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <button className="px-6 py-3.5 bg-slate-900 text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-slate-800 transition flex items-center gap-2">
-            <Filter size={16} /> Advanced Access
-          </button>
+          
         </div>
 
         {/* Original Table Format */}

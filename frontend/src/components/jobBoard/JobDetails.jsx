@@ -5,7 +5,8 @@ import {
     DollarSign, ExternalLink, Bookmark, Building2,
     CheckCircle2 
 } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../../context/AppContext';
+import toast from 'react-hot-toast';
 
 const JobDetails = () => {
     const { id } = useParams();
@@ -15,6 +16,7 @@ const JobDetails = () => {
     const [job, setJob] = useState(null);
     const [localLoading, setLocalLoading] = useState(true);
     const [isSaved, setIsSaved] = useState(false);
+    let loadingToast;
 
     // FIXED: Now fetchJobDetails is a stable reference from Context
     useEffect(() => {
@@ -42,13 +44,15 @@ const JobDetails = () => {
         const success = await trackApplication(job, 'Saved');
         if (success) {
             setIsSaved(true);
-            alert("Job Saved Successfullly!");
+            toast.success('Job saved successfully!', { id: loadingToast });
+            
         }
     };
 
     const handleApplyNow = async () => {
         const success = await trackApplication(job, 'Applied');
         if (success) {
+            toast.success('Job Applied successfully!', { id: loadingToast });
             window.open(job.applyLink, '_blank');
         }
     };

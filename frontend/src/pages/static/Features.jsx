@@ -8,6 +8,7 @@ import {
     Users2,
     Sparkles
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Features = () => {
     const featureList = [
@@ -99,9 +100,9 @@ const Features = () => {
                     <h3 className="text-2xl font-bold text-white mb-6 relative z-10">
                         Ready to organize your job search?
                     </h3>
-                    <button className="bg-white text-slate-900 px-8 py-3.5 rounded-full font-bold hover:bg-indigo-50 transition relative z-10 shadow-xl">
+                    <Link to='/signup' className="bg-white text-slate-900 px-8 py-3.5 rounded-full font-bold hover:bg-indigo-50 transition relative z-10 shadow-xl">
                         Join Trackly Today
-                    </button>
+                    </Link>
                 </div>
             </div>
         </section>

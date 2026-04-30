@@ -4,7 +4,8 @@ import {
   ChevronLeft, Search 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext'; // Import your custom hook
+import { useApp } from '../../context/AppContext'; // Import your custom hook
+import toast from 'react-hot-toast';
 
 const SavedJobs = () => {
   const navigate = useNavigate();
@@ -34,7 +35,12 @@ const SavedJobs = () => {
 
   const handleDelete = async (id) => {
     if (!window.confirm("Remove this job from your board?")) return;
-    await deleteApplication(id); // Using the centralized delete logic
+    try{
+      await deleteApplication(id);
+      toast.success("Job removed successfully");
+    }catch(error){
+      toast.error("Failed to remove job");
+    }
   };
 
   const handleJobDetails = (id) => {
