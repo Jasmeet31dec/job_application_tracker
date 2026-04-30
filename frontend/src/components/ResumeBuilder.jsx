@@ -66,19 +66,16 @@ const ResumeBuilder = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row">
-      {/* BACK TO HOME */}
-      <div className="mb-10">
-        <Link
-          to="/"
-          className="group inline-flex items-center gap-2 text-slate-500 hover:text-indigo-600 transition-colors font-bold text-sm bg-white px-5 py-2.5 rounded-xl border border-slate-200 shadow-sm"
-        >
-          <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-          Back to Home
-        </Link>
-      </div>
-
       {/* LEFT: INPUTS */}
       <div className="w-full lg:w-1/2 p-6 lg:p-10 lg:overflow-y-auto lg:h-screen border-r border-slate-200 bg-white">
+        <div className="mb-10">
+          <Link
+          to='/'
+          className="p-2 hover:bg-slate-50 rounded-lg transition-colors border border-slate-100"
+          >
+          <ChevronLeft size={20} className="text-slate-600" />
+          </Link>
+        </div>
         <header className="mb-8">
           <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tighter">AI <span className="text-indigo-600">Resume</span> Builder</h1>
           <p className="text-slate-500 font-medium">Enter your details and let AI handle the formatting.</p>
