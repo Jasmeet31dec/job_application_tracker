@@ -4,6 +4,7 @@ import {
   User, Briefcase, GraduationCap, Wrench, ChevronLeft,
   Download, Plus, Trash2, Eye, Layout, Loader2 
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 const ResumeBuilder = () => {
